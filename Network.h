@@ -165,6 +165,9 @@ public:
 		const int dimx = x.rows();
 		const int dimy = y.rows();
 
+		// Reset optimizer
+		opt.reset();
+
 		// Randomly shuffle the IDs
 		if(seed > 0)
 			m_rng.seed(seed);
@@ -178,19 +181,19 @@ public:
 		const int last_batch_size = nobs - (nbatch - 1) * batch_size;
 
 		// Create shuffled data
-		Matrix* batchx = new Matrix[nbatch];
-		Matrix* batchy = new Matrix[nbatch];
+		std::vector<Matrix> x_batches(nbatch);
+		std::vector<Matrix> y_batches(nbatch);
 		for(int i = 0; i < nbatch; i++)
 		{
 			const int bsize = (i == nbatch - 1) ? last_batch_size : batch_size;
-			batchx[i].resize(dimx, bsize);
-			batchy[i].resize(dimy, bsize);
+			x_batches[i].resize(dimx, bsize);
+			y_batches[i].resize(dimy, bsize);
 			// Copy data
 			const int offset = i * batch_size;
 			for(int j = 0; j < bsize; j++)
 			{
-				batchx[i].col(j).noalias() = x.col(id[offset + j]);
-				batchy[i].col(j).noalias() = y.col(id[offset + j]);
+				x_batches[i].col(j).noalias() = x.col(id[offset + j]);
+				y_batches[i].col(j).noalias() = y.col(id[offset + j]);
 			}
 		}
 
@@ -200,15 +203,12 @@ public:
 			// Train on each mini-batch
 			for(int i = 0; i < nbatch; i++)
 			{
-				this->forward(batchx[i]);
-				Scalar loss = this->backprop(batchx[i], batchy[i], true);
+				this->forward(x_batches[i]);
+				Scalar loss = this->backprop(x_batches[i], y_batches[i], true);
 				std::cout << "loss = " << loss << std::endl;
 				this->update(opt);
 			}
 		}
-
-		delete [] batchx;
-		delete [] batchy;
 
 		return true;
 	}
