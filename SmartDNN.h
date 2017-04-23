@@ -11,6 +11,7 @@
 #include "Layer/FullyConnected.h"
 
 #include "Activation/ReLU.h"
+#include "Activation/Identity.h"
 
 #include "Output.h"
 #include "Output/RegressionMSE.h"
