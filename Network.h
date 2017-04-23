@@ -139,14 +139,17 @@ public:
 		m_output = output;
 	}
 
-	void init(Scalar sd = Scalar(0.01), int seed = -1)
+	void init(const Scalar& mu = Scalar(0), const Scalar& sigma = Scalar(0.01), int seed = -1)
 	{
 		check_unit_sizes();
+
+		if(seed > 0)
+			m_rng.seed(seed);
 
 		const int nlayer = m_layers.size();
 		for(int i = 0; i < nlayer; i++)
 		{
-			m_layers[i]->init();
+			m_layers[i]->init(mu, sigma, m_rng);
 		}
 	}
 

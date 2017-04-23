@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 #include "../Config.h"
 #include "../Layer.h"
+#include "../Utils/Random.h"
 
 template <typename Activation>
 class FullyConnected: public Layer
@@ -24,7 +25,7 @@ public:
 		Layer(insize, outsize)
 	{}
 
-	void init()
+	void init(const Scalar& mu, const Scalar& sigma, RNGType& rng)
 	{
 		m_weight.resize(this->m_insize, this->m_outsize);
 		m_bias.resize(this->m_outsize);
@@ -32,8 +33,8 @@ public:
 		m_db.resize(this->m_outsize);
 
 		// Set random coefficients
-		m_weight.setRandom();
-		m_bias.setRandom();
+		set_normal_random(m_weight.data(), m_weight.size(), rng, mu, sigma);
+		set_normal_random(m_bias.data(), m_bias.size(), rng, mu, sigma);
 	}
 
 	void forward(const Matrix& prev_layer_data)

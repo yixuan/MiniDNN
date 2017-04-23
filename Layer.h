@@ -25,7 +25,7 @@ public:
 	virtual ~Layer() {}
 
 	// Initialize parameters
-	virtual void init() = 0;
+	virtual void init(const Scalar& mu, const Scalar& sigma, RNGType& rng) = 0;
 
 	// Compute output given input from previous layer
 	// Each column of prev_layer_data is an observation
