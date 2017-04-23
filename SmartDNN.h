@@ -18,6 +18,7 @@
 
 #include "Optimizer.h"
 #include "Optimizer/SGD.h"
+#include "Optimizer/Adagrad.h"
 
 
 #endif /* SMARTDNN_H_ */

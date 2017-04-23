@@ -1,6 +1,10 @@
 #ifndef OPTIMIZER_SGD_H_
 #define OPTIMIZER_SGD_H_
 
+#include <Eigen/Core>
+#include "../Config.h"
+#include "../Optimizer.h"
+
 class SGD: public Optimizer
 {
 private:
