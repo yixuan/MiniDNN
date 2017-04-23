@@ -52,7 +52,7 @@ public:
 		Activation::activate(m_bpdata, m_a);
 	}
 
-	const Matrix& output()
+	const Matrix& output() const
 	{
 		return m_a;
 	}
@@ -80,7 +80,7 @@ public:
 		m_bpdata = m_weight * m_bpdata;
 	}
 
-	const Matrix& backprop_data()
+	const Matrix& backprop_data() const
 	{
 		return m_bpdata;
 	}
@@ -96,22 +96,22 @@ public:
 		opt.update(db, b);
 	}
 
-	Vector parameters()
+	std::vector<Scalar> parameters() const
 	{
-		Vector res(m_weight.size() + m_bias.size());
+		std::vector<Scalar> res(m_weight.size() + m_bias.size());
 		// Copy the data of weights and bias to a long vector
-		std::copy(m_weight.data(), m_weight.data() + m_weight.size(), res.data());
-		std::copy(m_bias.data(), m_bias.data() + m_bias.size(), res.data() + m_weight.size());
+		std::copy(m_weight.data(), m_weight.data() + m_weight.size(), res.begin());
+		std::copy(m_bias.data(), m_bias.data() + m_bias.size(), res.begin() + m_weight.size());
 
 		return res;
 	}
 
-	Vector derivatives()
+	std::vector<Scalar> derivatives() const
 	{
-		Vector res(m_dw.size() + m_db.size());
+		std::vector<Scalar> res(m_dw.size() + m_db.size());
 		// Copy the data of weights and bias to a long vector
-		std::copy(m_dw.data(), m_dw.data() + m_dw.size(), res.data());
-		std::copy(m_db.data(), m_db.data() + m_db.size(), res.data() + m_dw.size());
+		std::copy(m_dw.data(), m_dw.data() + m_dw.size(), res.begin());
+		std::copy(m_db.data(), m_db.data() + m_db.size(), res.begin() + m_dw.size());
 
 		return res;
 	}

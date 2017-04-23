@@ -2,6 +2,7 @@
 #define LAYER_H_
 
 #include <Eigen/Core>
+#include <vector>
 #include "Config.h"
 #include "Optimizer.h"
 
@@ -34,7 +35,7 @@ public:
 
 	// Get a constant reference to the output of this layer, after calling forward()
 	// Each column is an observation
-	virtual const Matrix& output() = 0;
+	virtual const Matrix& output() const = 0;
 
 	// Compute gradients using back-propagation
 	// prev_layer_data contains the output of previous layer (which is also the input of this layer)
@@ -43,16 +44,16 @@ public:
 
 	// Data for previous layer in back-propagation
 	// Provides "next_layer_data" for the previous layer
-	virtual const Matrix& backprop_data() = 0;
+	virtual const Matrix& backprop_data() const = 0;
 
 	// Update parameters given gradients
 	virtual void update(Optimizer& opt) = 0;
 
 	// Get serialized parameters
-	virtual Vector parameters() = 0;
+	virtual std::vector<Scalar> parameters() const = 0;
 
 	// Get serialized gradients of parameters
-	virtual Vector derivatives() = 0;
+	virtual std::vector<Scalar> derivatives() const = 0;
 };
 
 
