@@ -4,9 +4,9 @@
 class SGD: public Optimizer
 {
 private:
-	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
 	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-	typedef Eigen::Array<Scalar, Eigen::Dynamic, 1> Array;
+	typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
+	typedef Vector::AlignedMapType AlignedMapVec;
 
 public:
 	Scalar m_lrate;
@@ -22,14 +22,9 @@ public:
 		m_decay = Scalar(0);
 	}
 
-	void update_vec(const Vector& dvec, Vector& vec)
+	void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec)
 	{
 		vec.noalias() -= m_lrate * (dvec + m_decay * vec);
-	}
-
-	void update_mat(const Matrix& dmat, Matrix& mat)
-	{
-		mat.noalias() -= m_lrate * (dmat + m_decay * mat);
 	}
 };
 

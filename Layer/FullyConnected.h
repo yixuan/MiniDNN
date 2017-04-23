@@ -12,6 +12,8 @@ class FullyConnected: public Layer
 private:
 	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
 	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+	typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
+	typedef Vector::AlignedMapType AlignedMapVec;
 
 	Matrix m_weight;  // Weight parameters, insize x outsize
 	Vector m_bias;    // Bias parameters, outsize x 1
@@ -85,8 +87,13 @@ public:
 
 	void update(Optimizer& opt)
 	{
-		opt.update_mat(m_dw, m_weight);
-		opt.update_vec(m_db, m_bias);
+		ConstAlignedMapVec dw(m_dw.data(), m_dw.size());
+		ConstAlignedMapVec db(m_db.data(), m_db.size());
+		AlignedMapVec      w(m_weight.data(), m_weight.size());
+		AlignedMapVec      b(m_bias.data(), m_bias.size());
+
+		opt.update(dw, w);
+		opt.update(db, b);
 	}
 
 	Vector parameters()
