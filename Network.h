@@ -5,10 +5,10 @@
 #include <memory>
 #include <vector>
 #include <exception>
-#include <random>
 #include "Config.h"
 #include "Layer.h"
 #include "Output.h"
+#include "Utils/Random.h"
 
 class Network
 {
@@ -17,6 +17,9 @@ private:
 
 	std::vector<Layer*> m_layers;
 	Output*             m_output;
+	RNGType             m_default_rng;  // Built-in RNG
+	RNGType&            m_rng;          // Points to the RNG provided by the user,
+	                                    // otherwise points to m_default_rng
 
 	// Check dimensions of layers
 	void check_unit_sizes()
@@ -100,7 +103,15 @@ private:
 
 public:
 	Network() :
-		m_output(NULL)
+		m_output(NULL),
+		m_default_rng(1),
+		m_rng(m_default_rng)
+	{}
+
+	Network(RNGType& rng) :
+		m_output(NULL),
+		m_default_rng(1),
+		m_rng(rng)
     {}
 
 	~Network()
@@ -111,7 +122,7 @@ public:
 			delete m_layers[i];
 		}
 
-		if(!m_output)
+		if(m_output)
 			delete m_output;
 	}
 
@@ -122,13 +133,13 @@ public:
 
 	void add_output(Output* output)
 	{
-		if(!m_output)
+		if(m_output)
 			delete m_output;
 
 		m_output = output;
 	}
 
-	void init()
+	void init(Scalar sd = Scalar(0.01), int seed = -1)
 	{
 		check_unit_sizes();
 
@@ -141,7 +152,7 @@ public:
 
 	// Fit a model
 	bool fit(Optimizer& opt, const Matrix& x, const Matrix& y, int batch_size, int epoch,
-			 int seed = 0)
+			 int seed = -1)
 	{
 		const int nlayer = m_layers.size();
 		if(nlayer <= 0)
@@ -152,9 +163,10 @@ public:
 		const int dimy = y.rows();
 
 		// Randomly shuffle the IDs
+		if(seed > 0)
+			m_rng.seed(seed);
 		Eigen::VectorXi id = Eigen::VectorXi::LinSpaced(nobs, 0, nobs - 1);
-		std::mt19937 gen(seed);
-		std::shuffle(id.data(), id.data() + nobs, gen);
+		shuffle(id.data(), id.size(), m_rng);
 
 		// Compute batch size
 		if(batch_size > nobs)

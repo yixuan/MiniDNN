@@ -2,7 +2,9 @@
 #define SMARTDNN_H_
 
 #include <Eigen/Core>
+
 #include "Config.h"
+
 #include "Network.h"
 
 #include "Layer.h"
