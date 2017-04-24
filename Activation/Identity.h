@@ -10,17 +10,21 @@ private:
 	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
 
 public:
-	// dest = act(src)
-	static inline void activate(const Matrix& src, Matrix& dest)
+	// a = activation(z) = z
+	// Z = [z1, ..., zn], A = [a1, ..., an], n observations
+	static inline void activate(const Matrix& Z, Matrix& A)
 	{
-		dest.noalias() = src;
+		A.noalias() = Z;
 	}
 
-	// src_act = act(src)
-	// dest = act'(src)
-	static inline void deriv_activate(const Matrix& src, const Matrix& src_act, Matrix& dest)
+	// Apply the Jacobian matrix J to a vector f
+	// g = J * f
+	// J = d_a / d_z = I
+	// Z = [z1, ..., zn], G = [g1, ..., gn], F = [f1, ..., fn]
+	// Note: When entering this function, Z and G may point to the same matrix
+	static inline void apply_jacobian(const Matrix& Z, const Matrix& A, const Matrix& F, Matrix& G)
 	{
-		dest.setOnes();
+		G.noalias() = F;
 	}
 };
 
