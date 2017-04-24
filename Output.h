@@ -10,6 +10,7 @@ class Output
 protected:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+    typedef Eigen::VectorXi IntegerVector;
 
 public:
     virtual ~Output() {}
@@ -18,6 +19,10 @@ public:
     // The computed derivative of the input should be stored in this layer, and can be retrieved by
     // the backprop_data() function
     virtual void evaluate(const Matrix& prev_layer_data, const Matrix& target) = 0;
+
+    // Another type of target data where each element of target is a class label
+    // This version may not be sensible for regression tasks
+    virtual void evaluate(const Matrix& prev_layer_data, const IntegerVector& target) = 0;
 
     // The derivative of the input of this layer, which is also the derivative
     // of the output of previous layer

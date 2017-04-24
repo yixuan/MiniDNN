@@ -21,7 +21,7 @@ public:
         const int nobs = prev_layer_data.cols();
         const int nvar = prev_layer_data.rows();
         if((target.cols() != nobs) || (target.rows() != nvar))
-            throw std::domain_error("Target data have incorrect dimension");
+            throw std::invalid_argument("Target data have incorrect dimension");
 
         // Compute the derivative of the input of this layer
         // L = -y * log(phat) - (1 - y) * log(1 - phat)
@@ -30,6 +30,24 @@ public:
         m_din.resize(nvar, nobs);
         m_din.array() = (target.array() < Scalar(0.5)).select((Scalar(1) - prev_layer_data.array()).cwiseInverse(),
                                                               -prev_layer_data.cwiseInverse());
+    }
+
+    void evaluate(const Matrix& prev_layer_data, const IntegerVector& target)
+    {
+        // Only when the last hidden layer has only one unit can we use this version
+        const int nvar = prev_layer_data.rows();
+        if(nvar != 1)
+            throw std::invalid_argument("Only one response variable is allowed when class labels are used as target data");
+
+        // Check dimension
+        const int nobs = prev_layer_data.cols();
+        if(target.cols() != nobs)
+            throw std::invalid_argument("Target data have incorrect dimension");
+
+        // Same as above
+        m_din.resize(1, nobs);
+        m_din.array() = (target.array() == 0).select((Scalar(1) - prev_layer_data.array()).cwiseInverse(),
+                                                     -prev_layer_data.cwiseInverse());
     }
 
     const Matrix& backprop_data() const
