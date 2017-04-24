@@ -25,10 +25,11 @@ public:
 
 	virtual ~Layer() {}
 
-	// Initialize parameters
+	// Initialize parameters using N(mu, sigma^2) distribution
 	virtual void init(const Scalar& mu, const Scalar& sigma, RNGType& rng) = 0;
 
-	// Compute output given input from previous layer
+	// Compute the output of this layer
+	// prev_layer_data is the output of previous layer, which is also the input of this layer
 	// Each column of prev_layer_data is an observation
 	// The computed data should be stored in the layer, and can be retrieved by the output() function
 	virtual void forward(const Matrix& prev_layer_data) = 0;
@@ -38,12 +39,13 @@ public:
 	virtual const Matrix& output() const = 0;
 
 	// Compute gradients using back-propagation
-	// prev_layer_data contains the output of previous layer (which is also the input of this layer)
-	// next_layer_data contains the back-propagation data from next layer
+	// prev_layer_data is the output of previous layer, which is also the input of this layer
+	// next_layer_data is the derivative of the input of next layer, which is also the derivative
+	// of the output of this layer
 	virtual void backprop(const Matrix& prev_layer_data, const Matrix& next_layer_data) = 0;
 
-	// Data for previous layer in back-propagation
-	// Provides "next_layer_data" for the previous layer
+	// The derivative of the input of this layer, which is also the derivative
+	// of the output of previous layer
 	virtual const Matrix& backprop_data() const = 0;
 
 	// Update parameters given gradients

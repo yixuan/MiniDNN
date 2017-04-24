@@ -56,36 +56,34 @@ private:
 
 	// Let each layer compute its gradients of the parameters
 	// This function returns the current loss function value if compute_loss is true
-	Scalar backprop(const Matrix& input, const Matrix& target, bool compute_loss = false)
+	void backprop(const Matrix& input, const Matrix& target)
 	{
 		const int nlayer = m_layers.size();
 		if(nlayer <= 0)
-			return Scalar(0);
+			return;
 
 		Layer* first_layer = m_layers[0];
 		Layer* last_layer = m_layers[nlayer - 1];
 
-		// Let output compute back-propagation data
-		Scalar loss = m_output->evaluate(last_layer->output(), target, compute_loss);
+		// Let output layer compute back-propagation data
+		m_output->evaluate(last_layer->output(), target);
 
-		// If there is only one layer, "prev_layer_data" will be the input data
+		// If there is only one hidden layer, "prev_layer_data" will be the input data
 		if(nlayer == 1)
 		{
 			first_layer->backprop(input, m_output->backprop_data());
-			return loss;
+			return;
 		}
 
-		// Compute gradients for last layer
+		// Compute gradients for the last hidden layer
 		last_layer->backprop(m_layers[nlayer - 2]->output(), m_output->backprop_data());
-		// Compute gradients for all the layers except for the first one and the last one
+		// Compute gradients for all the hidden layers except for the first one and the last one
 		for(int i = nlayer - 2; i > 0; i--)
 		{
 			m_layers[i]->backprop(m_layers[i - 1]->output(), m_layers[i + 1]->backprop_data());
 		}
-		// Compute gradients for first layer
+		// Compute gradients for the first layer
 		first_layer->backprop(input, m_layers[1]->backprop_data());
-
-		return loss;
 	}
 
 	// Update parameters
@@ -126,11 +124,13 @@ public:
 			delete m_output;
 	}
 
+	// NOTE: layer is a pointer that will be deleted by the network object, so don't delete it outside
 	void add_layer(Layer* layer)
 	{
 		m_layers.push_back(layer);
 	}
 
+	// NOTE: output is a pointer that will be deleted by the network object, so don't delete it outside
 	void add_output(Output* output)
 	{
 		if(m_output)
@@ -139,6 +139,8 @@ public:
 		m_output = output;
 	}
 
+	// Initialize parameters using N(mu, sigma^2) distribution
+	// Random seed will be set if seed > 0
 	void init(const Scalar& mu = Scalar(0), const Scalar& sigma = Scalar(0.01), int seed = -1)
 	{
 		check_unit_sizes();
@@ -153,7 +155,18 @@ public:
 		}
 	}
 
+	// Compute the current loss function value
+	// This function is mainly used to report loss function value inside fit(),
+	// and can be assumed to be called after backprop()
+	Scalar loss(const Matrix& target) const
+	{
+		const Layer* last_layer = m_layers.back();
+
+		return m_output->loss(last_layer->output(), target);
+	}
+
 	// Fit a model
+	// Random seed will be set if seed > 0
 	bool fit(Optimizer& opt, const Matrix& x, const Matrix& y, int batch_size, int epoch,
 			 int seed = -1)
 	{
@@ -204,8 +217,8 @@ public:
 			for(int i = 0; i < nbatch; i++)
 			{
 				this->forward(x_batches[i]);
-				Scalar loss = this->backprop(x_batches[i], y_batches[i], true);
-				std::cout << "loss = " << loss << std::endl;
+				this->backprop(x_batches[i], y_batches[i]);
+				std::cout << "loss = " << this->loss(y_batches[i]) << std::endl;
 				this->update(opt);
 			}
 		}
