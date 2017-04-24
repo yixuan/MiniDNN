@@ -12,6 +12,7 @@
 
 #include "Activation/ReLU.h"
 #include "Activation/Identity.h"
+#include "Activation/Sigmoid.h"
 
 #include "Output.h"
 #include "Output/RegressionMSE.h"
