@@ -40,6 +40,10 @@ public:
     // This function can be assumed to be called after evaluate(), so that it can make use of the
     // intermediate result to save some computation
     virtual Scalar loss(const Matrix& prev_layer_data, const Matrix& target) const = 0;
+
+    // Another type of target data where each element is a class label
+    // This version may not be sensible for regression tasks
+    virtual Scalar loss(const Matrix& prev_layer_data, const IntegerVector& target) const = 0;
 };
 
 

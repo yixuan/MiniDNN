@@ -58,6 +58,13 @@ public:
         // L = 0.5 * ||yhat - y||^2
         return m_din.squaredNorm() / nobs * Scalar(0.5);
     }
+
+    Scalar loss(const Matrix& prev_layer_data, const IntegerVector& target) const
+    {
+        // This version is not supported by regression models
+        // We simply raise an exception here
+        throw std::invalid_argument("Regression models do not support target data as class labels");
+    }
 };
 
 

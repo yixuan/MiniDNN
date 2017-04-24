@@ -19,9 +19,10 @@ public:
     {
         // Each element should be either 0 or 1
         const int nelem = target.size();
+        const Scalar* target_data = target.data();
         for(int i = 0; i < nelem; i++)
         {
-            if((target[i] != Scalar(0)) && (target[i] != Scalar(1)))
+            if((target_data[i] != Scalar(0)) && (target_data[i] != Scalar(1)))
                 throw std::invalid_argument("Target data should only contain zero or one");
         }
     }
@@ -63,7 +64,7 @@ public:
 
         // Check dimension
         const int nobs = prev_layer_data.cols();
-        if(target.cols() != nobs)
+        if(target.size() != nobs)
             throw std::invalid_argument("Target data have incorrect dimension");
 
         // Same as above
@@ -87,6 +88,13 @@ public:
         // y = 1 => L = -log(phat)
         // m_din contains 1/(1 - phat) if y = 0, and -1/phat if y = 1, so
         // L = log(abs(m_din)).sum()
+        return m_din.array().abs().log().sum() / nobs;
+    }
+
+    Scalar loss(const Matrix& prev_layer_data, const IntegerVector& target) const
+    {
+        // Save as above
+        const int nobs = prev_layer_data.cols();
         return m_din.array().abs().log().sum() / nobs;
     }
 };
