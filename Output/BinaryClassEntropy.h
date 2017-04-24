@@ -1,11 +1,11 @@
-#ifndef OUTPUT_REGRESSIONMSE_H_
-#define OUTPUT_REGRESSIONMSE_H_
+#ifndef OUTPUT_BINARYCLASSENTROPY_H_
+#define OUTPUT_BINARYCLASSENTROPY_H_
 
 #include <Eigen/Core>
 #include <exception>
 #include "../Config.h"
 
-class RegressionMSE: public Output
+class BinaryClassEntropy: public Output
 {
 private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
@@ -24,11 +24,12 @@ public:
             throw std::domain_error("Target data have incorrect dimension");
 
         // Compute the derivative of the input of this layer
-        // L = 0.5 * ||yhat - y||^2
-        // in = yhat
-        // d_L / d_in = yhat - y
+        // L = -y * log(phat) - (1 - y) * log(1 - phat)
+        // in = phat
+        // d_L / d_in = -y / phat + (1 - y) / (1 - phat), y is either 0 or 1
         m_din.resize(nvar, nobs);
-        m_din.noalias() = prev_layer_data - target;
+        m_din.array() = (target.array() < Scalar(0.5)).select((Scalar(1) - prev_layer_data.array()).cwiseInverse(),
+                                                              -prev_layer_data.cwiseInverse());
     }
 
     const Matrix& backprop_data() const
@@ -41,10 +42,14 @@ public:
         // Dimension has been checked in evaluate()
         const int nobs = prev_layer_data.cols();
 
-        // L = 0.5 * ||yhat - y||^2
-        return m_din.squaredNorm() / nobs * Scalar(0.5);
+        // L = -y * log(phat) - (1 - y) * log(1 - phat)
+        // y = 0 => L = -log(1 - phat)
+        // y = 1 => L = -log(phat)
+        // m_din contains 1/(1 - phat) if y = 0, and -1/phat if y = 1, so
+        // L = log(abs(m_din)).sum()
+        return m_din.array().abs().log().sum() / nobs;
     }
 };
 
 
-#endif /* OUTPUT_REGRESSIONMSE_H_ */
+#endif /* OUTPUT_BINARYCLASSENTROPY_H_ */
