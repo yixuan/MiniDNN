@@ -25,13 +25,7 @@ public:
 		m_lrate(Scalar(0.001)), m_eps(Scalar(1e-6)), m_decay(Scalar(0.9))
 	{}
 
-	void reset()
-	{
-		m_lrate = Scalar(0.001);
-		m_eps = Scalar(1e-6);
-        m_decay = Scalar(0.9);
-		m_history.clear();
-	}
+	void reset() { m_history.clear(); }
 
 	void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec)
 	{

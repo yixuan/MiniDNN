@@ -24,12 +24,7 @@ public:
 		m_lrate(Scalar(0.01)), m_eps(Scalar(1e-7))
 	{}
 
-	void reset()
-	{
-		m_lrate = Scalar(0.01);
-		m_eps = Scalar(1e-7);
-		m_history.clear();
-	}
+	void reset() { m_history.clear(); }
 
 	void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec)
 	{

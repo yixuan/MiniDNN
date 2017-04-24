@@ -20,11 +20,7 @@ public:
 		m_lrate(Scalar(0.01)), m_decay(Scalar(0))
 	{}
 
-	void reset()
-	{
-		m_lrate = Scalar(0.01);
-		m_decay = Scalar(0);
-	}
+	void reset() {}
 
 	void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec)
 	{
