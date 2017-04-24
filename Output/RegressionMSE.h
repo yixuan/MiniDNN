@@ -15,6 +15,13 @@ private:
                    // Note that input of this layer is also the output of previous layer
 
 public:
+    void check_target_data(const IntegerVector& target)
+    {
+        // This version is not supported by regression models
+        // We simply raise an exception here
+        throw std::invalid_argument("Regression models do not support target data as class labels");
+    }
+
     void evaluate(const Matrix& prev_layer_data, const Matrix& target)
     {
         // Check dimension

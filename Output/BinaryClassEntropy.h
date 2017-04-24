@@ -15,6 +15,28 @@ private:
                    // Note that input of this layer is also the output of previous layer
 
 public:
+    void check_target_data(const Matrix& target)
+    {
+        // Each element should be either 0 or 1
+        const int nelem = target.size();
+        for(int i = 0; i < nelem; i++)
+        {
+            if((target[i] != Scalar(0)) && (target[i] != Scalar(1)))
+                throw std::invalid_argument("Target data should only contain zero or one");
+        }
+    }
+
+    void check_target_data(const IntegerVector& target)
+    {
+        // Each element should be either 0 or 1
+        const int nobs = target.size();
+        for(int i = 0; i < nobs; i++)
+        {
+            if((target[i] != 0) && (target[i] != 1))
+                throw std::invalid_argument("Target data should only contain zero or one");
+        }
+    }
+
     void evaluate(const Matrix& prev_layer_data, const Matrix& target)
     {
         // Check dimension

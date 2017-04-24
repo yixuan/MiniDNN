@@ -15,12 +15,20 @@ protected:
 public:
     virtual ~Output() {}
 
+    // Check the format of target data, e.g. in classification problems the
+    // target data should be binary (either 0 or 1)
+    virtual void check_target_data(const Matrix& target) {}
+
+    // Another type of target data where each element is a class label
+    // This version may not be sensible for regression tasks
+    virtual void check_target_data(const IntegerVector& target) {}
+
     // A combination of the forward stage and the back-propagation stage for the output layer
     // The computed derivative of the input should be stored in this layer, and can be retrieved by
     // the backprop_data() function
     virtual void evaluate(const Matrix& prev_layer_data, const Matrix& target) = 0;
 
-    // Another type of target data where each element of target is a class label
+    // Another type of target data where each element is a class label
     // This version may not be sensible for regression tasks
     virtual void evaluate(const Matrix& prev_layer_data, const IntegerVector& target) = 0;
 
