@@ -15,12 +15,13 @@ private:
 	typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
 	typedef Vector::AlignedMapType AlignedMapVec;
 
-	Matrix m_weight;  // Weight parameters, insize x outsize
-	Vector m_bias;    // Bias parameters, outsize x 1
+	Matrix m_weight;  // Weight parameters, W(insize x outsize)
+	Vector m_bias;    // Bias parameters, b(outsize x 1)
 	Matrix m_dw;      // Derivative of weights
 	Vector m_db;      // Derivative of bias
 	Matrix m_a;       // Output of this layer, a = act(z), z = W' * in + b
-	Matrix m_bpdata;  // Data for back-propagation
+	Matrix m_din;     // Derivative of the input of this layer.
+	                  // Note that input of this layer is also the output of previous layer
 
 public:
 	FullyConnected(const int insize, const int outsize) :
@@ -42,14 +43,14 @@ public:
 	void forward(const Matrix& prev_layer_data)
 	{
 		const int nobs = prev_layer_data.cols();
-		// Use m_bpdata to temporarily store linear term z = W' * in + b
-		m_bpdata.resize(this->m_outsize, nobs);
-		m_bpdata.noalias() = m_weight.transpose() * prev_layer_data;
-		m_bpdata.colwise() += m_bias;
+		// Use m_din to temporarily store linear term z = W' * in + b
+		m_din.resize(this->m_outsize, nobs);
+		m_din.noalias() = m_weight.transpose() * prev_layer_data;
+		m_din.colwise() += m_bias;
 
 		// Apply activation function
 		m_a.resize(this->m_outsize, nobs);
-		Activation::activate(m_bpdata, m_a);
+		Activation::activate(m_din, m_a);
 	}
 
 	const Matrix& output() const
@@ -63,26 +64,25 @@ public:
 	{
 		const int nobs = prev_layer_data.cols();
 
-		// After forward stage, m_bpdata contains z = W' * in + b
-		// Now compute act'(z)
-		Activation::deriv_activate(m_bpdata, m_a, m_bpdata);
+		// After forward stage, m_din contains z = W' * in + b
+		// Now we need to calculate d_L / d_z = (d_a / d_z) * (d_L / d_a)
+		// d_L / d_a is computed in the next layer, contained in next_layer_data
+		// The Jacobian matrix J = d_a / d_z is determined by the activation function
+		Activation::apply_jacobian(m_din, m_a, next_layer_data, m_din);
 
-		// Compute delta = bpdata .* act'(z)
-		m_bpdata.array() *= next_layer_data.array();
+		// Derivative for weights, d_L / d_W = (d_L / d_z) * in'
+		m_dw.noalias() = prev_layer_data * m_din.transpose() / nobs;
 
-		// Derivative for weights
-		m_dw.noalias() = prev_layer_data * m_bpdata.transpose() / nobs;
+		// Derivative for bias, d_L / d_b = d_L / d_z
+		m_db.noalias() = m_din.rowwise().mean();
 
-		// Derivative for bias
-		m_db.noalias() = m_bpdata.rowwise().mean();
-
-		// Back-propagation data for previous layer
-		m_bpdata = m_weight * m_bpdata;
+		// Compute d_L / d_in = W * (d_L / d_z)
+		m_din = m_weight * m_din;
 	}
 
 	const Matrix& backprop_data() const
 	{
-		return m_bpdata;
+		return m_din;
 	}
 
 	void update(Optimizer& opt)
