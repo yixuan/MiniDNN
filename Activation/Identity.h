@@ -7,25 +7,25 @@
 class Identity
 {
 private:
-	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
 
 public:
-	// a = activation(z) = z
-	// Z = [z1, ..., zn], A = [a1, ..., an], n observations
-	static inline void activate(const Matrix& Z, Matrix& A)
-	{
-		A.noalias() = Z;
-	}
+    // a = activation(z) = z
+    // Z = [z1, ..., zn], A = [a1, ..., an], n observations
+    static inline void activate(const Matrix& Z, Matrix& A)
+    {
+        A.noalias() = Z;
+    }
 
-	// Apply the Jacobian matrix J to a vector f
-	// J = d_a / d_z = I
-	// g = J * f = f
-	// Z = [z1, ..., zn], G = [g1, ..., gn], F = [f1, ..., fn]
-	// Note: When entering this function, Z and G may point to the same matrix
-	static inline void apply_jacobian(const Matrix& Z, const Matrix& A, const Matrix& F, Matrix& G)
-	{
-		G.noalias() = F;
-	}
+    // Apply the Jacobian matrix J to a vector f
+    // J = d_a / d_z = I
+    // g = J * f = f
+    // Z = [z1, ..., zn], G = [g1, ..., gn], F = [f1, ..., fn]
+    // Note: When entering this function, Z and G may point to the same matrix
+    static inline void apply_jacobian(const Matrix& Z, const Matrix& A, const Matrix& F, Matrix& G)
+    {
+        G.noalias() = F;
+    }
 };
 
 

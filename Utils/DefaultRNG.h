@@ -39,7 +39,7 @@ public:
 
     void seed(unsigned long seed)
     {
-    	m_rand = (seed ? (seed & m_max) : 1);
+        m_rand = (seed ? (seed & m_max) : 1);
     }
 
     double rand()
