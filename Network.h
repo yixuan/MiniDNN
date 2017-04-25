@@ -7,6 +7,7 @@
 #include "Config.h"
 #include "Layer.h"
 #include "Output.h"
+#include "Callback.h"
 #include "Utils/Random.h"
 
 class Network
@@ -17,9 +18,12 @@ private:
 
     std::vector<Layer*> m_layers;
     Output*             m_output;
-    RNGType             m_default_rng;  // Built-in RNG
-    RNGType&            m_rng;          // Points to the RNG provided by the user,
-                                        // otherwise points to m_default_rng
+    RNGType             m_default_rng;      // Built-in RNG
+    RNGType&            m_rng;              // Points to the RNG provided by the user,
+                                            // otherwise points to m_default_rng
+    Callback            m_default_callback; // Default callback function
+    Callback*           m_callback;         // Points to user-provided callback function,
+                                            // otherwise points to m_default_callback
 
     // Check dimensions of layers
     void check_unit_sizes()
@@ -106,13 +110,17 @@ public:
     Network() :
         m_output(NULL),
         m_default_rng(1),
-        m_rng(m_default_rng)
+        m_rng(m_default_rng),
+        m_default_callback(),
+        m_callback(&m_default_callback)
     {}
 
     Network(RNGType& rng) :
         m_output(NULL),
         m_default_rng(1),
-        m_rng(rng)
+        m_rng(rng),
+        m_default_callback(),
+        m_callback(&m_default_callback)
     {}
 
     ~Network()
@@ -140,6 +148,11 @@ public:
             delete m_output;
 
         m_output = output;
+    }
+
+    void set_callback(Callback& callback)
+    {
+        m_callback = &callback;
     }
 
     // Initialize parameters using N(mu, sigma^2) distribution
@@ -215,16 +228,26 @@ public:
             }
         }
 
+        // Set up callback parameters
+        m_callback->m_nbatch = nbatch;
+        m_callback->m_nepoch = epoch;
+
         // Iterations on the whole data set
         for(int k = 0; k < epoch; k++)
         {
+            m_callback->m_epoch_id = k;
+
             // Train on each mini-batch
             for(int i = 0; i < nbatch; i++)
             {
+                m_callback->m_batch_id = i;
+                m_callback->pre_training_batch(this, x_batches[i], y_batches[i]);
+
                 this->forward(x_batches[i]);
                 this->backprop(x_batches[i], y_batches[i]);
-                std::cout << "loss = " << this->loss(y_batches[i]) << std::endl;
                 this->update(opt);
+
+                m_callback->post_training_batch(this, x_batches[i], y_batches[i]);
             }
         }
 

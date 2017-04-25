@@ -25,5 +25,8 @@
 #include "Optimizer/AdaGrad.h"
 #include "Optimizer/RMSProp.h"
 
+#include "Callback.h"
+#include "Callback/VerboseCallback.h"
+
 
 #endif /* SMARTDNN_H_ */
