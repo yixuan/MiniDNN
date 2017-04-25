@@ -8,10 +8,6 @@
 class MultiClassEntropy: public Output
 {
 private:
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-    typedef Eigen::VectorXi IntegerVector;
-
     Matrix m_din;  // Derivative of the input of this layer.
                    // Note that input of this layer is also the output of previous layer
 
