@@ -2,9 +2,8 @@
 #define NETWORK_H_
 
 #include <Eigen/Core>
-#include <memory>
 #include <vector>
-#include <exception>
+#include <stdexcept>
 #include "Config.h"
 #include "Layer.h"
 #include "Output.h"

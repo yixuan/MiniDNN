@@ -2,7 +2,7 @@
 #define OUTPUT_MULTICLASSENTROPY_H_
 
 #include <Eigen/Core>
-#include <exception>
+#include <stdexcept>
 #include "../Config.h"
 
 class MultiClassEntropy: public Output

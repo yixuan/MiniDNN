@@ -2,7 +2,7 @@
 #define OUTPUT_BINARYCLASSENTROPY_H_
 
 #include <Eigen/Core>
-#include <exception>
+#include <stdexcept>
 #include "../Config.h"
 
 class BinaryClassEntropy: public Output
