@@ -1,5 +1,5 @@
-#ifndef SMARTDNN_H_
-#define SMARTDNN_H_
+#ifndef MINIDNN_H_
+#define MINIDNN_H_
 
 #include <Eigen/Core>
 
@@ -29,4 +29,4 @@
 #include "Callback/VerboseCallback.h"
 
 
-#endif /* SMARTDNN_H_ */
+#endif /* MINIDNN_H_ */
