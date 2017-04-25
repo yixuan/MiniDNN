@@ -13,6 +13,7 @@ class Network
 {
 private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+    typedef Eigen::RowVectorXi IntegerVector;
 
     std::vector<Layer*> m_layers;
     Output*             m_output;
@@ -54,8 +55,11 @@ private:
     }
 
     // Let each layer compute its gradients of the parameters
-    // This function returns the current loss function value if compute_loss is true
-    void backprop(const Matrix& input, const Matrix& target)
+    // target has two versions: Matrix and RowVectorXi
+    // The RowVectorXi version is used in classification problems where each
+    // element is a class label
+    template <typename TargetType>
+    void backprop(const Matrix& input, const TargetType& target)
     {
         const int nlayer = m_layers.size();
         if(nlayer <= 0)
@@ -157,7 +161,8 @@ public:
     // Compute the current loss function value
     // This function is mainly used to report loss function value inside fit(),
     // and can be assumed to be called after backprop()
-    Scalar loss(const Matrix& target) const
+    template <typename TargetType>
+    Scalar loss(const TargetType& target) const
     {
         const Layer* last_layer = m_layers.back();
 
@@ -166,8 +171,9 @@ public:
 
     // Fit a model
     // Random seed will be set if seed > 0
-    bool fit(Optimizer& opt, const Matrix& x, const Matrix& y, int batch_size, int epoch,
-             int seed = -1)
+    template <typename TargetType>
+    bool fit(Optimizer& opt, const Matrix& x, const TargetType& y,
+             int batch_size, int epoch, int seed = -1)
     {
         const int nlayer = m_layers.size();
         if(nlayer <= 0)
@@ -194,7 +200,7 @@ public:
 
         // Create shuffled data
         std::vector<Matrix> x_batches(nbatch);
-        std::vector<Matrix> y_batches(nbatch);
+        std::vector<TargetType> y_batches(nbatch);
         for(int i = 0; i < nbatch; i++)
         {
             const int bsize = (i == nbatch - 1) ? last_batch_size : batch_size;

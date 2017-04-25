@@ -10,7 +10,7 @@ class Output
 protected:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-    typedef Eigen::VectorXi IntegerVector;
+    typedef Eigen::RowVectorXi IntegerVector;
 
 public:
     virtual ~Output() {}
