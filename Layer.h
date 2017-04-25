@@ -20,10 +20,10 @@ public:
         m_insize(insize), m_outsize(outsize)
     {}
 
-    int in_size() { return m_insize; }
-    int out_size() { return m_outsize; }
-
     virtual ~Layer() {}
+
+    int in_size() const { return m_insize; }
+    int out_size() const { return m_outsize; }
 
     // Initialize parameters using N(mu, sigma^2) distribution
     virtual void init(const Scalar& mu, const Scalar& sigma, RNGType& rng) = 0;

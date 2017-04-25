@@ -14,7 +14,7 @@ protected:
 public:
     virtual ~Optimizer() {}
 
-    virtual void reset() = 0;
+    virtual void reset() {};
 
     virtual void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec) = 0;
 };
