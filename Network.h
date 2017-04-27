@@ -35,7 +35,7 @@ private:
         for(int i = 1; i < nlayer; i++)
         {
             if(m_layers[i]->in_size() != m_layers[i - 1]->out_size())
-                throw std::domain_error("Unit sizes do not match");
+                throw std::invalid_argument("Unit sizes do not match");
         }
     }
 
@@ -48,7 +48,7 @@ private:
 
         // First layer
         if(input.rows() != m_layers[0]->in_size())
-            throw std::domain_error("Input data have incorrect dimension");
+            throw std::invalid_argument("Input data have incorrect dimension");
         m_layers[0]->forward(input);
 
         // The following layers
@@ -184,49 +184,27 @@ public:
 
     // Fit a model
     // Random seed will be set if seed > 0
-    template <typename TargetType>
-    bool fit(Optimizer& opt, const Matrix& x, const TargetType& y,
+    template <typename DerivedX, typename DerivedY>
+    bool fit(Optimizer& opt, const Eigen::MatrixBase<DerivedX>& x, const Eigen::MatrixBase<DerivedY>& y,
              int batch_size, int epoch, int seed = -1)
     {
+        typedef typename Eigen::MatrixBase<DerivedX>::PlainObject XType;
+        typedef typename Eigen::MatrixBase<DerivedX>::PlainObject YType;
+
         const int nlayer = m_layers.size();
         if(nlayer <= 0)
             return false;
 
-        const int nobs = x.cols();
-        const int dimx = x.rows();
-        const int dimy = y.rows();
-
         // Reset optimizer
         opt.reset();
 
-        // Randomly shuffle the IDs
+        // Create shuffled mini-batches
         if(seed > 0)
             m_rng.seed(seed);
-        Eigen::VectorXi id = Eigen::VectorXi::LinSpaced(nobs, 0, nobs - 1);
-        shuffle(id.data(), id.size(), m_rng);
 
-        // Compute batch size
-        if(batch_size > nobs)
-            batch_size = nobs;
-        const int nbatch = (nobs - 1) / batch_size + 1;
-        const int last_batch_size = nobs - (nbatch - 1) * batch_size;
-
-        // Create shuffled data
-        std::vector<Matrix> x_batches(nbatch);
-        std::vector<TargetType> y_batches(nbatch);
-        for(int i = 0; i < nbatch; i++)
-        {
-            const int bsize = (i == nbatch - 1) ? last_batch_size : batch_size;
-            x_batches[i].resize(dimx, bsize);
-            y_batches[i].resize(dimy, bsize);
-            // Copy data
-            const int offset = i * batch_size;
-            for(int j = 0; j < bsize; j++)
-            {
-                x_batches[i].col(j).noalias() = x.col(id[offset + j]);
-                y_batches[i].col(j).noalias() = y.col(id[offset + j]);
-            }
-        }
+        std::vector<XType> x_batches;
+        std::vector<YType> y_batches;
+        const int nbatch = craete_shuffled_batches(x, y, batch_size, m_rng, x_batches, y_batches);
 
         // Set up callback parameters
         m_callback->m_nbatch = nbatch;

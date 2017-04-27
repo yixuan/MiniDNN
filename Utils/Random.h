@@ -1,8 +1,8 @@
 #ifndef UTILS_RANDOM_H_
 #define UTILS_RANDOM_H_
 
+#include <Eigen/Core>
 #include "../Config.h"
-#include <cmath>
 
 // Shuffle the integer array
 inline void shuffle(int* arr, const int n, RNGType& rng)
@@ -16,6 +16,55 @@ inline void shuffle(int* arr, const int n, RNGType& rng)
         arr[i] = arr[j];
         arr[j] = tmp;
     }
+}
+
+template <typename DerivedX, typename DerivedY>
+int craete_shuffled_batches(
+    const Eigen::MatrixBase<DerivedX>& x, const Eigen::MatrixBase<DerivedY>& y, int batch_size, RNGType& rng,
+    std::vector<typename Eigen::MatrixBase<DerivedX>::PlainObject>& x_batches,
+    std::vector<typename Eigen::MatrixBase<DerivedY>::PlainObject>& y_batches)
+{
+    // For convenience
+    typedef typename Eigen::MatrixBase<DerivedX>::PlainObject XType;
+    typedef typename Eigen::MatrixBase<DerivedY>::PlainObject YType;
+
+    const int nobs = x.cols();
+    const int dimx = x.rows();
+    const int dimy = y.rows();
+
+    if(y.cols() != nobs)
+        throw std::invalid_argument("Input X and Y have different number of observations");
+
+    // Randomly shuffle the IDs
+    Eigen::VectorXi id = Eigen::VectorXi::LinSpaced(nobs, 0, nobs - 1);
+    shuffle(id.data(), id.size(), rng);
+
+    // Compute batch size
+    if(batch_size > nobs)
+        batch_size = nobs;
+    const int nbatch = (nobs - 1) / batch_size + 1;
+    const int last_batch_size = nobs - (nbatch - 1) * batch_size;
+
+    // Create shuffled data
+    x_batches.clear();
+    y_batches.clear();
+    x_batches.reserve(nbatch);
+    y_batches.reserve(nbatch);
+    for(int i = 0; i < nbatch; i++)
+    {
+        const int bsize = (i == nbatch - 1) ? last_batch_size : batch_size;
+        x_batches.push_back(XType(dimx, bsize));
+        y_batches.push_back(YType(dimy, bsize));
+        // Copy data
+        const int offset = i * batch_size;
+        for(int j = 0; j < bsize; j++)
+        {
+            x_batches[i].col(j).noalias() = x.col(id[offset + j]);
+            y_batches[i].col(j).noalias() = y.col(id[offset + j]);
+        }
+    }
+
+    return nbatch;
 }
 
 // Fill array with N(mu, sigma^2) random numbers
