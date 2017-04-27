@@ -188,8 +188,12 @@ public:
     bool fit(Optimizer& opt, const Eigen::MatrixBase<DerivedX>& x, const Eigen::MatrixBase<DerivedY>& y,
              int batch_size, int epoch, int seed = -1)
     {
-        typedef typename Eigen::MatrixBase<DerivedX>::PlainObject XType;
-        typedef typename Eigen::MatrixBase<DerivedX>::PlainObject YType;
+        // We do not directly use PlainObjectX since it may be row-majored if x is passed as mat.transpose()
+        // We want to force XType and YType to be column-majored
+        typedef typename Eigen::MatrixBase<DerivedX>::PlainObject PlainObjectX;
+        typedef typename Eigen::MatrixBase<DerivedX>::PlainObject PlainObjectY;
+        typedef Eigen::Matrix<typename PlainObjectX::Scalar, PlainObjectX::RowsAtCompileTime, PlainObjectX::ColsAtCompileTime> XType;
+        typedef Eigen::Matrix<typename PlainObjectY::Scalar, PlainObjectY::RowsAtCompileTime, PlainObjectY::ColsAtCompileTime> YType;
 
         const int nlayer = m_layers.size();
         if(nlayer <= 0)
@@ -204,7 +208,7 @@ public:
 
         std::vector<XType> x_batches;
         std::vector<YType> y_batches;
-        const int nbatch = craete_shuffled_batches(x, y, batch_size, m_rng, x_batches, y_batches);
+        const int nbatch = create_shuffled_batches(x, y, batch_size, m_rng, x_batches, y_batches);
 
         // Set up callback parameters
         m_callback->m_nbatch = nbatch;

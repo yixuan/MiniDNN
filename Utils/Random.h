@@ -18,16 +18,12 @@ inline void shuffle(int* arr, const int n, RNGType& rng)
     }
 }
 
-template <typename DerivedX, typename DerivedY>
-int craete_shuffled_batches(
+template <typename DerivedX, typename DerivedY, typename XType, typename YType>
+int create_shuffled_batches(
     const Eigen::MatrixBase<DerivedX>& x, const Eigen::MatrixBase<DerivedY>& y, int batch_size, RNGType& rng,
-    std::vector<typename Eigen::MatrixBase<DerivedX>::PlainObject>& x_batches,
-    std::vector<typename Eigen::MatrixBase<DerivedY>::PlainObject>& y_batches)
+    std::vector<XType>& x_batches, std::vector<YType>& y_batches
+)
 {
-    // For convenience
-    typedef typename Eigen::MatrixBase<DerivedX>::PlainObject XType;
-    typedef typename Eigen::MatrixBase<DerivedY>::PlainObject YType;
-
     const int nobs = x.cols();
     const int dimx = x.rows();
     const int dimy = y.rows();
