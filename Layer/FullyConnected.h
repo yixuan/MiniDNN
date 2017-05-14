@@ -15,8 +15,8 @@ private:
     typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
     typedef Vector::AlignedMapType AlignedMapVec;
 
-    Matrix m_weight;  // Weight parameters, W(insize x outsize)
-    Vector m_bias;    // Bias parameters, b(outsize x 1)
+    Matrix m_weight;  // Weight parameters, W(in_size x out_size)
+    Vector m_bias;    // Bias parameters, b(out_size x 1)
     Matrix m_dw;      // Derivative of weights
     Vector m_db;      // Derivative of bias
     Matrix m_a;       // Output of this layer, a = act(z), z = W' * in + b
@@ -24,16 +24,16 @@ private:
                       // Note that input of this layer is also the output of previous layer
 
 public:
-    FullyConnected(const int insize, const int outsize) :
-        Layer(insize, outsize)
+    FullyConnected(const int in_size, const int out_size) :
+        Layer(in_size, out_size)
     {}
 
     void init(const Scalar& mu, const Scalar& sigma, RNGType& rng)
     {
-        m_weight.resize(this->m_insize, this->m_outsize);
-        m_bias.resize(this->m_outsize);
-        m_dw.resize(this->m_insize, this->m_outsize);
-        m_db.resize(this->m_outsize);
+        m_weight.resize(this->m_in_size, this->m_out_size);
+        m_bias.resize(this->m_out_size);
+        m_dw.resize(this->m_in_size, this->m_out_size);
+        m_db.resize(this->m_out_size);
 
         // Set random coefficients
         set_normal_random(m_weight.data(), m_weight.size(), rng, mu, sigma);
@@ -44,12 +44,12 @@ public:
     {
         const int nobs = prev_layer_data.cols();
         // Use m_din to temporarily store linear term z = W' * in + b
-        m_din.resize(this->m_outsize, nobs);
+        m_din.resize(this->m_out_size, nobs);
         m_din.noalias() = m_weight.transpose() * prev_layer_data;
         m_din.colwise() += m_bias;
 
         // Apply activation function
-        m_a.resize(this->m_outsize, nobs);
+        m_a.resize(this->m_out_size, nobs);
         Activation::activate(m_din, m_a);
     }
 
@@ -58,8 +58,8 @@ public:
         return m_a;
     }
 
-    // prev: insize x nobs
-    // next: outsize x nobs
+    // prev: in_size x nobs
+    // next: out_size x nobs
     void backprop(const Matrix& prev_layer_data, const Matrix& next_layer_data)
     {
         const int nobs = prev_layer_data.cols();
@@ -116,7 +116,6 @@ public:
         return res;
     }
 };
-
 
 
 #endif /* LAYER_FULLYCONNECTED_H_ */

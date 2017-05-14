@@ -12,18 +12,18 @@ protected:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
 
-    const int m_insize;  // Size of input units
-    const int m_outsize; // Size of output units
+    const int m_in_size;  // Size of input units
+    const int m_out_size; // Size of output units
 
 public:
-    Layer(const int insize, const int outsize) :
-        m_insize(insize), m_outsize(outsize)
+    Layer(const int in_size, const int out_size) :
+        m_in_size(in_size), m_out_size(out_size)
     {}
 
     virtual ~Layer() {}
 
-    int in_size() const { return m_insize; }
-    int out_size() const { return m_outsize; }
+    int in_size() const { return m_in_size; }
+    int out_size() const { return m_out_size; }
 
     // Initialize parameters using N(mu, sigma^2) distribution
     virtual void init(const Scalar& mu, const Scalar& sigma, RNGType& rng) = 0;
