@@ -33,21 +33,96 @@ void vector_to_tensor_4d(
     }
 }
 
-template <typename MapMatType>
-void vector_to_tensor_3d(
-    typename MapMatType::PointerType src, const int d1, const int d2, const int d3,
-    std::vector<MapMatType>& tensor
-)
+// Convolution using the "valid" rule
+// "dest" should be properly sized and zeroed
+// dest.rows() == src.rows() - Krows + 1
+// dest.cols() == src.cols() - Kcols + 1
+template <int Krows, int Kcols>
+void convolve_valid(
+    const Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& src,
+    const Eigen::Matrix<Scalar, Krows, Kcols>& kernel,
+    Eigen::Map< Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& dest)
 {
-    const int inner_mat_size = d2 * d3;
+	const int dest_rows = dest.rows();
+    const int dest_cols = dest.cols();
 
-    tensor.clear();
-    tensor.reserve(d1);
-    for(int i = 0; i < d1; i++)
-    {
-        typename MapMatType::PointerType slice_start = src + i * inner_mat_size;
-        tensor.push_back(MapMat(slice_start, d2, d3));
-    }
+	for(int j = 0; j < dest_cols; j++)
+	{
+		for(int i = 0; i < dest_rows; i++)
+		{
+			dest.coeffRef(i, j) += src.block<Krows, Kcols>(i, j).cwiseProduct(kernel).sum();
+		}
+	}
+}
+// Specialization for dynamic kernel matrix
+template <>
+void convolve_valid<Eigen::Dynamic, Eigen::Dynamic>(
+    const Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& src,
+    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& kernel,
+    Eigen::Map< Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& dest)
+{
+	const int dest_rows = dest.rows();
+    const int dest_cols = dest.cols();
+    const int K_rows = kernel.rows();
+    const int K_cols = kernel.cols();
+
+	for(int j = 0; j < dest_cols; j++)
+	{
+		for(int i = 0; i < dest_rows; i++)
+		{
+			dest.coeffRef(i, j) += src.block(i, j, K_rows, K_cols).cwiseProduct(kernel).sum();
+		}
+	}
+}
+
+// Convolution using the "full" rule
+// "dest" should be properly sized and zeroed
+// dest.rows() == src.rows() + Krows - 1
+// dest.cols() == src.cols() + Kcols - 1
+template <int Krows, int Kcols>
+void convolve_full(
+    const Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& src,
+    const Eigen::Matrix<Scalar, Krows, Kcols>& kernel,
+    Eigen::Map< Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& dest)
+{
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+
+    const int dest_rows = dest.rows();
+    const int dest_cols = dest.cols();
+    Matrix src_pad = Matrix::Zero(dest_rows + Krows - 1, dest_cols + Kcols - 1);
+    src_pad.block(Krows - 1, Kcols - 1, src.rows(), src.cols()).noalias() = src;
+
+    for(int j = 0; j < dest_cols; j++)
+	{
+		for(int i = 0; i < dest_rows; i++)
+		{
+			dest.coeffRef(i, j) += src_pad.block<Krows, Kcols>(i, j).cwiseProduct(kernel).sum();
+		}
+	}
+}
+// Specialization for dynamic kernel matrix
+template <>
+void convolve_full<Eigen::Dynamic, Eigen::Dynamic>(
+    const Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& src,
+    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& kernel,
+    Eigen::Map< Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& dest)
+{
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+
+    const int K_rows = kernel.rows();
+    const int K_cols = kernel.cols();
+    const int dest_rows = dest.rows();
+    const int dest_cols = dest.cols();
+    Matrix src_pad = Matrix::Zero(dest_rows + K_rows - 1, dest_cols + K_cols - 1);
+    src_pad.block(K_rows - 1, K_cols - 1, src.rows(), src.cols()).noalias() = src;
+
+    for(int j = 0; j < dest_cols; j++)
+	{
+		for(int i = 0; i < dest_rows; i++)
+		{
+			dest.coeffRef(i, j) += src_pad.block(i, j, K_rows, K_cols).cwiseProduct(kernel).sum();
+		}
+	}
 }
 
 
