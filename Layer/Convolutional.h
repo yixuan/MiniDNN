@@ -243,6 +243,15 @@ public:
         return res;
     }
 
+    void set_parameters(const std::vector<Scalar>& param)
+    {
+        if(static_cast<int>(param.size()) != m_filter_data.size() + m_bias.size())
+            throw std::invalid_argument("Parameter size does not match");
+
+        std::copy(param.begin(), param.begin() + m_filter_data.size(), m_filter_data.data());
+        std::copy(param.begin() + m_filter_data.size(), param.end(), m_bias.data());
+    }
+
     std::vector<Scalar> get_derivatives() const
     {
         std::vector<Scalar> res(m_df_data.size() + m_db.size());
