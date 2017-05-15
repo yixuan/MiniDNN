@@ -9,6 +9,7 @@
 
 #include "Layer.h"
 #include "Layer/FullyConnected.h"
+#include "Layer/Convolutional.h"
 
 #include "Activation/ReLU.h"
 #include "Activation/Identity.h"
