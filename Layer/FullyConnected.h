@@ -2,6 +2,7 @@
 #define LAYER_FULLYCONNECTED_H_
 
 #include <Eigen/Core>
+#include <stdexcept>
 #include "../Config.h"
 #include "../Layer.h"
 #include "../Utils/Random.h"
@@ -19,7 +20,8 @@ private:
     Vector m_bias;    // Bias parameters, b(out_size x 1)
     Matrix m_dw;      // Derivative of weights
     Vector m_db;      // Derivative of bias
-    Matrix m_a;       // Output of this layer, a = act(z), z = W' * in + b
+    Matrix m_z;       // Linear term, z = W' * in + b
+    Matrix m_a;       // Output of this layer, a = act(z)
     Matrix m_din;     // Derivative of the input of this layer.
                       // Note that input of this layer is also the output of previous layer
 
@@ -43,14 +45,14 @@ public:
     void forward(const Matrix& prev_layer_data)
     {
         const int nobs = prev_layer_data.cols();
-        // Use m_din to temporarily store linear term z = W' * in + b
-        m_din.resize(this->m_out_size, nobs);
-        m_din.noalias() = m_weight.transpose() * prev_layer_data;
-        m_din.colwise() += m_bias;
+        // Linear term z = W' * in + b
+        m_z.resize(this->m_out_size, nobs);
+        m_z.noalias() = m_weight.transpose() * prev_layer_data;
+        m_z.colwise() += m_bias;
 
         // Apply activation function
         m_a.resize(this->m_out_size, nobs);
-        Activation::activate(m_din, m_a);
+        Activation::activate(m_z, m_a);
     }
 
     const Matrix& output() const
@@ -64,20 +66,23 @@ public:
     {
         const int nobs = prev_layer_data.cols();
 
-        // After forward stage, m_din contains z = W' * in + b
+        // After forward stage, m_z contains z = W' * in + b
         // Now we need to calculate d_L / d_z = (d_a / d_z) * (d_L / d_a)
         // d_L / d_a is computed in the next layer, contained in next_layer_data
         // The Jacobian matrix J = d_a / d_z is determined by the activation function
-        Activation::apply_jacobian(m_din, m_a, next_layer_data, m_din);
+        Matrix& dLz = m_z;
+        Activation::apply_jacobian(m_z, m_a, next_layer_data, dLz);
 
+        // Now dLz contains d_L / d_z
         // Derivative for weights, d_L / d_W = (d_L / d_z) * in'
-        m_dw.noalias() = prev_layer_data * m_din.transpose() / nobs;
+        m_dw.noalias() = prev_layer_data * dLz.transpose() / nobs;
 
         // Derivative for bias, d_L / d_b = d_L / d_z
-        m_db.noalias() = m_din.rowwise().mean();
+        m_db.noalias() = dLz.rowwise().mean();
 
         // Compute d_L / d_in = W * (d_L / d_z)
-        m_din = m_weight * m_din;
+        m_din.resize(this->m_in_size, nobs);
+        m_din.noalias() = m_weight * dLz;
     }
 
     const Matrix& backprop_data() const
@@ -96,7 +101,7 @@ public:
         opt.update(db, b);
     }
 
-    std::vector<Scalar> parameters() const
+    std::vector<Scalar> get_parameters() const
     {
         std::vector<Scalar> res(m_weight.size() + m_bias.size());
         // Copy the data of weights and bias to a long vector
@@ -106,7 +111,16 @@ public:
         return res;
     }
 
-    std::vector<Scalar> derivatives() const
+    void set_parameters(const std::vector<Scalar>& param)
+    {
+        if(static_cast<int>(param.size()) != m_weight.size() + m_bias.size())
+            throw std::invalid_argument("Parameter size does not match");
+
+        std::copy(param.begin(), param.begin() + m_weight.size(), m_weight.data());
+        std::copy(param.begin() + m_weight.size(), param.end(), m_bias.data());
+    }
+
+    std::vector<Scalar> get_derivatives() const
     {
         std::vector<Scalar> res(m_dw.size() + m_db.size());
         // Copy the data of weights and bias to a long vector
