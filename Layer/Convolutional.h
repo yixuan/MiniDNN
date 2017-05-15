@@ -161,7 +161,7 @@ public:
         //
         // d_zk / d_wij = 0, if k != j
         // d_L / d_wij = (d_zj / d_wij) * (d_L / d_zj) = sum_i((d_zj / d_wij) * (d_L / d_zj))
-        // = sum_i(conv(d_L / d_zj, in_i))
+        // = sum_i(conv(in_i, d_L / d_zj))
         //
         // z_j is an image (matrix), b_j is a scalar
         // d_zj / d_bj = a matrix of the same size of d_zj filled with 1
@@ -181,7 +181,7 @@ public:
                 // Ouput channel
                 for(int j = 0; j < m_out_channels; j++)
                 {
-                    convolve_valid<Eigen::Dynamic, Eigen::Dynamic>(dLz_tensor[k][j], in_tensor[k][i], m_df[i][j]);
+                    convolve_valid<Eigen::Dynamic, Eigen::Dynamic>(in_tensor[k][i], dLz_tensor[k][j], m_df[i][j]);
                 }
             }
         }
