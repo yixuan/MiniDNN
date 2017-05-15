@@ -182,6 +182,85 @@ public:
         return m_output->loss(last_layer->output(), target);
     }
 
+    std::vector< std::vector<Scalar> > get_parameters() const
+    {
+        const int nlayer = m_layers.size();
+        std::vector< std::vector<Scalar> > res;
+        res.reserve(nlayer);
+        for(int i = 0; i < nlayer; i++)
+        {
+            res.push_back(m_layers[i]->get_parameters());
+        }
+
+        return res;
+    }
+
+    void set_parameters(const std::vector< std::vector<Scalar> >& param)
+    {
+        const int nlayer = m_layers.size();
+        if(static_cast<int>(param.size()) != nlayer)
+            throw std::invalid_argument("Parameter size does not match");
+
+        for(int i = 0; i < nlayer; i++)
+        {
+            m_layers[i]->set_parameters(param[i]);
+        }
+    }
+
+    std::vector< std::vector<Scalar> > get_derivatives() const
+    {
+        const int nlayer = m_layers.size();
+        std::vector< std::vector<Scalar> > res;
+        res.reserve(nlayer);
+        for(int i = 0; i < nlayer; i++)
+        {
+            res.push_back(m_layers[i]->get_derivatives());
+        }
+
+        return res;
+    }
+
+    /*
+    template <typename TargetType>
+    void check_gradient(const Matrix& input, const TargetType& target)
+    {
+        this->forward(input);
+        this->backprop(input, target);
+        std::vector< std::vector<Scalar> > param = this->get_parameters();
+        std::vector< std::vector<Scalar> > deriv = this->get_derivatives();
+
+        const Scalar eps = 1e-4;
+        for(unsigned int i = 0; i < deriv.size(); i++)
+        {
+            for(unsigned int j = 0; j < deriv[i].size(); j++)
+            {
+                Scalar old = param[i][j];
+
+                param[i][j] -= eps;
+                this->set_parameters(param);
+                this->forward(input);
+                this->backprop(input, target);
+                Scalar loss_pre = this->loss(target);
+
+                param[i][j] += eps * 2;
+                this->set_parameters(param);
+                this->forward(input);
+                this->backprop(input, target);
+                Scalar loss_post = this->loss(target);
+
+                Scalar dest = (loss_post - loss_pre) / eps / 2;
+
+                std::cout << "i = " << i << ", j = " << j <<
+                ", d = " << deriv[i][j] << ", dest = " << (loss_post - loss_pre) / eps / 2 <<
+                ", diff = " << dest - deriv[i][j] << std::endl;
+
+                param[i][j] = old;
+            }
+        }
+        this->set_parameters(param);
+    }
+    */
+
     // Fit a model
     // Random seed will be set if seed > 0
     template <typename DerivedX, typename DerivedY>
