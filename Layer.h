@@ -52,10 +52,11 @@ public:
     virtual void update(Optimizer& opt) = 0;
 
     // Get serialized parameters
-    virtual std::vector<Scalar> parameters() const = 0;
+    virtual std::vector<Scalar> get_parameters() const = 0;
+    virtual void set_parameters(const std::vector<Scalar>& param) {};
 
     // Get serialized gradients of parameters
-    virtual std::vector<Scalar> derivatives() const = 0;
+    virtual std::vector<Scalar> get_derivatives() const = 0;
 };
 
 
