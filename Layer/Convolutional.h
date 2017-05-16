@@ -14,10 +14,8 @@ class Convolutional: public Layer
 private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-    typedef Eigen::Map<Matrix> MapMat;
-    typedef Eigen::Map<const Matrix> ConstMapMat;
-    typedef std::vector< std::vector<MapMat> > Tensor4D;
-    typedef std::vector< std::vector<ConstMapMat> > ConstTensor4D;
+    typedef std::vector< std::vector<MatWrapper> > Tensor4D;
+    typedef std::vector< std::vector<ConstMatWrapper> > ConstTensor4D;
     typedef Matrix::ConstAlignedMapType ConstAlignedMapMat;
     typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
     typedef Vector::AlignedMapType AlignedMapVec;
@@ -118,10 +116,10 @@ public:
                 // Input channel
                 for(int i = 0; i < m_in_channels; i++)
                 {
-                    convolve_valid<Eigen::Dynamic, Eigen::Dynamic>(in_tensor[k][i], m_filter[i][j], out_tensor[k][j]);
+                    convolve_valid(in_tensor[k][i], m_filter[i][j], out_tensor[k][j]);
                 }
                 // Add bias term
-                out_tensor[k][j].array() += m_bias[j];
+                out_tensor[k][j].get().array() += m_bias[j];
             }
         }
 
@@ -181,7 +179,7 @@ public:
                 // Ouput channel
                 for(int j = 0; j < m_out_channels; j++)
                 {
-                    convolve_valid<Eigen::Dynamic, Eigen::Dynamic>(in_tensor[k][i], dLz_tensor[k][j], m_df[i][j]);
+                    convolve_valid(in_tensor[k][i], dLz_tensor[k][j], m_df[i][j]);
                 }
             }
         }
@@ -211,7 +209,7 @@ public:
                 // Ouput channel
                 for(int j = 0; j < m_out_channels; j++)
                 {
-                    convolve_full<Eigen::Dynamic, Eigen::Dynamic>(dLz_tensor[k][j], m_filter[i][j].reverse(), din_tensor[k][i]);
+                    convolve_full(dLz_tensor[k][j], m_filter[i][j], din_tensor[k][i]);
                 }
             }
         }
