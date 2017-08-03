@@ -58,7 +58,7 @@ public:
         m_in_channels(in_channels), m_out_channels(out_channels)
     {}
 
-    void init(const Scalar& mu, const Scalar& sigma, RNGType& rng)
+    void init(const Scalar& mu, const Scalar& sigma, RNG& rng)
     {
         // Set data dimension
         const int filter_data_size = m_in_channels * m_out_channels * m_filter_rows * m_filter_cols;

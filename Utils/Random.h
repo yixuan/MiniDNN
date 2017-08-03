@@ -3,9 +3,10 @@
 
 #include <Eigen/Core>
 #include "../Config.h"
+#include "../RNG.h"
 
 // Shuffle the integer array
-inline void shuffle(int* arr, const int n, RNGType& rng)
+inline void shuffle(int* arr, const int n, RNG& rng)
 {
     for(int i = n - 1; i > 0; i--)
     {
@@ -20,7 +21,7 @@ inline void shuffle(int* arr, const int n, RNGType& rng)
 
 template <typename DerivedX, typename DerivedY, typename XType, typename YType>
 int create_shuffled_batches(
-    const Eigen::MatrixBase<DerivedX>& x, const Eigen::MatrixBase<DerivedY>& y, int batch_size, RNGType& rng,
+    const Eigen::MatrixBase<DerivedX>& x, const Eigen::MatrixBase<DerivedY>& y, int batch_size, RNG& rng,
     std::vector<XType>& x_batches, std::vector<YType>& y_batches
 )
 {
@@ -64,7 +65,7 @@ int create_shuffled_batches(
 }
 
 // Fill array with N(mu, sigma^2) random numbers
-inline void set_normal_random(Scalar* arr, const int n, RNGType& rng,
+inline void set_normal_random(Scalar* arr, const int n, RNG& rng,
                               const Scalar& mu = Scalar(0),
                               const Scalar& sigma = Scalar(1))
 {

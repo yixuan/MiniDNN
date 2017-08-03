@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 #include <vector>
 #include "Config.h"
+#include "RNG.h"
 #include "Optimizer.h"
 
 class Layer
@@ -26,7 +27,7 @@ public:
     int out_size() const { return m_out_size; }
 
     // Initialize parameters using N(mu, sigma^2) distribution
-    virtual void init(const Scalar& mu, const Scalar& sigma, RNGType& rng) = 0;
+    virtual void init(const Scalar& mu, const Scalar& sigma, RNG& rng) = 0;
 
     // Compute the output of this layer
     // prev_layer_data is the output of previous layer, which is also the input of this layer

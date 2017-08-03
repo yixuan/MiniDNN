@@ -30,7 +30,7 @@ public:
         Layer(in_size, out_size)
     {}
 
-    void init(const Scalar& mu, const Scalar& sigma, RNGType& rng)
+    void init(const Scalar& mu, const Scalar& sigma, RNG& rng)
     {
         m_weight.resize(this->m_in_size, this->m_out_size);
         m_bias.resize(this->m_out_size);

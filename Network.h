@@ -17,9 +17,9 @@ private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::RowVectorXi IntegerVector;
 
-    RNGType             m_default_rng;      // Built-in RNG
-    RNGType&            m_rng;              // Points to the RNG provided by the user,
-                                            // otherwise points to m_default_rng
+    RNG                 m_default_rng;      // Built-in RNG
+    RNG&                m_rng;              // Reference to the RNG provided by the user,
+                                            // otherwise reference to m_default_rng
     std::vector<Layer*> m_layers;           // Pointers to hidden layers
     Output*             m_output;           // The output layer
     Callback            m_default_callback; // Default callback function
@@ -109,17 +109,17 @@ private:
 
 public:
     Network() :
-        m_output(NULL),
         m_default_rng(1),
         m_rng(m_default_rng),
+		m_output(NULL),
         m_default_callback(),
         m_callback(&m_default_callback)
     {}
 
-    Network(RNGType& rng) :
-        m_output(NULL),
+    Network(RNG& rng) :
         m_default_rng(1),
         m_rng(rng),
+		m_output(NULL),
         m_default_callback(),
         m_callback(&m_default_callback)
     {}
