@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdexcept>
 #include "Config.h"
+#include "RNG.h"
 #include "Layer.h"
 #include "Output.h"
 #include "Callback.h"
@@ -16,11 +17,11 @@ private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::RowVectorXi IntegerVector;
 
-    std::vector<Layer*> m_layers;
-    Output*             m_output;
     RNGType             m_default_rng;      // Built-in RNG
     RNGType&            m_rng;              // Points to the RNG provided by the user,
                                             // otherwise points to m_default_rng
+    std::vector<Layer*> m_layers;           // Pointers to hidden layers
+    Output*             m_output;           // The output layer
     Callback            m_default_callback; // Default callback function
     Callback*           m_callback;         // Points to user-provided callback function,
                                             // otherwise points to m_default_callback
@@ -142,7 +143,7 @@ public:
     }
 
     // NOTE: output is a pointer that will be deleted by the network object, so don't delete it outside
-    void add_output(Output* output)
+    void set_output(Output* output)
     {
         if(m_output)
             delete m_output;

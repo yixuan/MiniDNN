@@ -1,9 +1,9 @@
-#ifndef UTILS_DEFAULTRNG_H_
-#define UTILS_DEFAULTRNG_H_
+#ifndef RNG_H_
+#define RNG_H_
 
 // Based on public domain code by Ray Gardner
 // http://stjarnhimlen.se/snippets/rg_rand.c
-class DefaultRNG
+class RNG
 {
 private:
     const int m_a;     // multiplier
@@ -31,7 +31,7 @@ private:
         return (long)lo;
     }
 public:
-    DefaultRNG(unsigned long init_seed) :
+    RNG(unsigned long init_seed) :
         m_a(16807),
         m_max(2147483647L),
         m_rand(init_seed ? (init_seed & m_max) : 1)
@@ -50,4 +50,4 @@ public:
 };
 
 
-#endif /* UTILS_DEFAULTRNG_H_ */
+#endif /* RNG_H_ */
