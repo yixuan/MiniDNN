@@ -68,60 +68,6 @@ void vector_to_tensor_4d(
     }
 }
 
-// Convolution using the "valid" rule
-// "dest" should be properly sized and zeroed
-// dest.rows() == src.rows() - Krows + 1
-// dest.cols() == src.cols() - Kcols + 1
-template <int Krows, int Kcols>
-void convolve_valid(
-    const ConstMatWrapper& src,
-    const Eigen::Matrix<Scalar, Krows, Kcols>& kernel,
-    MatWrapper& dest)
-{
-    typedef Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> > ConstMapMat;
-    typedef Eigen::Map< Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> > MapMat;
-
-	const int dest_rows = dest.rows();
-    const int dest_cols = dest.cols();
-
-    ConstMapMat msrc = src.get();
-    MapMat mdest = dest.get();
-	for(int j = 0; j < dest_cols; j++)
-	{
-		for(int i = 0; i < dest_rows; i++)
-		{
-			mdest.coeffRef(i, j) += msrc.block<Krows, Kcols>(i, j).cwiseProduct(kernel).sum();
-		}
-	}
-}
-// Overload for mapped matrix
-// KernelType is either MatWrapper or ConstMatWrapper
-template <typename KernelType>
-void convolve_valid(
-    const ConstMatWrapper& src,
-    KernelType& kernel,
-    MatWrapper& dest)
-{
-    typedef Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> > ConstMapMat;
-    typedef Eigen::Map< Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> > MapMat;
-
-	const int dest_rows = dest.rows();
-    const int dest_cols = dest.cols();
-    const int K_rows = kernel.rows();
-    const int K_cols = kernel.cols();
-
-    ConstMapMat msrc = src.get();
-    typename KernelType::MapMatType mkernel = kernel.get();
-    MapMat mdest = dest.get();
-	for(int j = 0; j < dest_cols; j++)
-	{
-		for(int i = 0; i < dest_rows; i++)
-		{
-			mdest.coeffRef(i, j) += msrc.block(i, j, K_rows, K_cols).cwiseProduct(mkernel).sum();
-		}
-	}
-}
-
 // Convolution using the "full" rule, with kernel rotated
 // "dest" should be properly sized and zeroed
 // dest.rows() == src.rows() + Krows - 1
@@ -177,8 +123,6 @@ void convolve_full(
 	}
 }
 
-
-
 // We assume the following memory layout:
 // There are 'n_obs' images, each with 'n_in_channel' channels
 // Each channel has 'channel_rows' rows and 'channel_cols' columns
@@ -203,7 +147,7 @@ void convolve_full(
  * # out channel 1 # out channel 2 # out channel 3 # out channel 1 # ...
  * #               #               #               #               #
  * #########################################################################
- * |<--------------- in channel 1 --------------->|<--------------- in channel 2 ----
+ * |<---------------- in channel 1 --------------->|<---------------- in channel 2 ----
  */
 //
 // Convolution results from different input channels are summed up to produce the
@@ -214,9 +158,21 @@ void convolve_full(
 // The final result is written to the memory pointed by 'dest', with a similar
 // layout to 'src'
 //
+// New parameter: 'image_outer_loop'
+// True: the description above
+// False: 'src' has the following layout
+/*
+ * ###############################################################
+ * #           #           #           #           #
+ * #  image 1  #  image 2  #  image 3  #  image 1  # ...
+ * #           #           #           #           #
+ * ###############################################################
+ * |<----------- channel 1 ----------->|<----------- channel 2 ----
+ */
+//
 // Algorithm is based on https://arxiv.org/abs/1706.06873
 void convolve_valid(
-	const Scalar* src, const int n_obs,
+	const Scalar* src, const bool image_outer_loop, const int n_obs,
 	const int n_in_channel, const int n_out_channel, const int channel_rows, const int channel_cols,
 	const Scalar* filter_data, const int filter_rows, const int filter_cols,
 	Scalar* dest)
@@ -240,18 +196,38 @@ void convolve_valid(
 	const int flat_cols = filter_rows * img_cols;
 	RMatrix flat_mat(flat_rows, flat_cols);
 	Scalar* flat_mat_data = flat_mat.data();
-	for(int i = 0; i < n_obs; i++, src += img_size)
-	{
-		// Current source image
-		ConstMapMat img(src, img_rows, img_cols);
-		// Source image is cut into 'conv_rows' overlapped blocks
-		// The j-th block is copied to the 'i * conv_rows + j'-th row of 'flat_mat'
-		for(int j = 0; j < conv_rows; j++, flat_mat_data += flat_cols)
-		{
-			MapMat flat_mat_row(flat_mat_data, filter_rows, img_cols);
-			flat_mat_row.noalias() = img.block(j, 0, filter_rows, img_cols);
-		}
-	}
+    if(image_outer_loop)
+    {
+        for(int i = 0; i < n_obs; i++, src += img_size)
+        {
+            // Current source image
+            ConstMapMat img(src, img_rows, img_cols);
+            // Source image is cut into 'conv_rows' overlapped blocks
+            // The j-th block is copied to the 'i * conv_rows + j'-th row of 'flat_mat'
+            for(int j = 0; j < conv_rows; j++, flat_mat_data += flat_cols)
+            {
+                MapMat flat_mat_row(flat_mat_data, filter_rows, img_cols);
+                flat_mat_row.noalias() = img.block(j, 0, filter_rows, img_cols);
+            }
+        }
+    } else {
+        const int channel_size = channel_rows * channel_cols;
+        for(int k = 0; k < n_in_channel; k++)
+        {
+            flat_mat_data = flat_mat.data() + k * filter_rows * channel_cols;
+            for(int i = 0; i < n_obs; i++, src += channel_size)
+            {
+                // Current channel
+                ConstMapMat channel(src, channel_rows, channel_cols);
+                for(int j = 0; j < conv_rows; j++, flat_mat_data += flat_cols)
+                {
+                    MapMat flat_mat_row(flat_mat_data, filter_rows, channel_cols);
+                    flat_mat_row.noalias() = channel.block(j, 0, filter_rows, channel_cols);
+                }
+
+            }
+        }
+    }
 
 	// Filters
 	const int filter_size = filter_rows * filter_cols;
@@ -274,8 +250,6 @@ void convolve_valid(
 					filter.block(0, filter_start_col, filter_size, n_out_channel);
 		}
 	}
-
-    std::cout << res << std::endl << std::endl;
 
 	// The layout of 'res' is very complicated
 	/*
@@ -330,54 +304,6 @@ void convolve_valid(
         }
     }
 }
-
-int test()
-{
-	const int n_obs = 2;
-	const int n_in_channel = 3;
-	const int n_out_channel = 2;
-	const int channel_rows = 5;
-	const int channel_cols = 4;
-	const int filter_rows = 3;
-	const int filter_cols = 2;
-
-	Eigen::MatrixXd img(channel_rows, channel_cols * n_in_channel * n_obs);
-    img << 1, 2, 3, 4,   2, 3, 4, 5,   3, 4, 5, 6,            6, 5, 4, 3,   5, 4, 3, 2,   4, 3, 2, 1,
-           1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,            1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,
-           0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0,            0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0,
-           1, 0, 1, 0,   0, 1, 0, 1,   1, 2, 3, 4,            1, 2, 3, 4,   2, 3, 4, 5,   3, 4, 5, 6,
-           0, 0, 1, 0,   0, 0, 1, 1,   1, 1, 1, 0,            0, 0, 0, 1,   2, 1, 2, 3,   1, 1, 0, 0;
-    std::cout << img << std::endl << std::endl;
-
-    Eigen::MatrixXd filter(filter_rows, filter_cols * n_in_channel * n_out_channel);
-    filter << 1, 0,   1, 0,          1, 1,   0, 0,          1, 1,   1, 1,
-              2, 1,   1, 2,          1, 1,   1, 1,          0, 0,   1, 1,
-              0, 1,   1, 0,          0, 0,   1, 1,          1, 1,   1, 1;
-    std::cout << filter << std::endl << std::endl;
-
-	const int conv_rows = channel_rows - filter_rows + 1;
-	const int conv_cols = channel_cols - filter_cols + 1;
-	const int dest_rows = conv_rows;
-	const int dest_cols = conv_cols * n_out_channel * n_obs;
-	Eigen::MatrixXd dest(dest_rows, dest_cols);
-
-	convolve_valid(img.data(), n_obs,
-			n_in_channel, n_out_channel, channel_rows, channel_cols,
-			filter.data(), filter_rows, filter_cols, dest.data());
-
-    std::cout << dest << std::endl << std::endl;
-
-    // 4, 5, 6,   4, 5, 6,            7, 9, 11,   2, 2, 2,             7, 9, 11,   9, 11, 13,
-    // 1, 2, 1,   2, 1, 2,            2, 2,  2,   1, 1, 1,             5, 7,  9,   5,  7,  9,
-    // 2, 2, 2,   1, 2, 2,            1, 1,  1,   1, 2, 3,             2, 2,  1,   5,  7,  8;
-
-    // 18, 23, 28,   15, 18, 21,
-    //  8, 11, 12,    8,  9, 12,
-    //  5,  5,  4,    7, 11, 13;
-
-	return 0;
-}
-
 
 
 #endif /* UTILS_CONVOLUTION_H_ */
