@@ -178,4 +178,206 @@ void convolve_full(
 }
 
 
+
+// We assume the following memory layout:
+// There are 'n_obs' images, each with 'n_in_channel' channels
+// Each channel has 'channel_rows' rows and 'channel_cols' columns
+// Starting from 'src', first iterate on channels, and then images
+/*
+ * ###############################################################
+ * #           #           #           #           #
+ * # channel 1 # channel 2 # channel 3 # channel 1 # ...
+ * #           #           #           #           #
+ * ###############################################################
+ * |<------------ image 1 ------------>|<------------ image 2 ----
+ */
+//
+// Then we assume there are 'n_out_channel' output channels, so in total
+// we have 'n_in_channel * n_out_channel' filters for each image
+// Each filter has 'filter_rows' rows and 'filter_cols' columns
+// Filters start from 'filter_data'. The layout looks like below, with each
+// block consisting of 'filter_rows * filter_cols' elements
+/*
+ * #########################################################################
+ * #               #               #               #               #
+ * # out channel 1 # out channel 2 # out channel 3 # out channel 1 # ...
+ * #               #               #               #               #
+ * #########################################################################
+ * |<--------------- in channel 1 --------------->|<--------------- in channel 2 ----
+ */
+//
+// Convolution results from different input channels are summed up to produce the
+// result for each output channel
+// Convolution results for different output channels are concatenated to preoduce
+// the result for each image
+//
+// The final result is written to the memory pointed by 'dest', with a similar
+// layout to 'src'
+//
+// Algorithm is based on https://arxiv.org/abs/1706.06873
+void convolve_valid(
+	const Scalar* src, const int n_obs,
+	const int n_in_channel, const int n_out_channel, const int channel_rows, const int channel_cols,
+	const Scalar* filter_data, const int filter_rows, const int filter_cols,
+	Scalar* dest)
+{
+	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> RMatrix;
+	typedef Eigen::Map<const Matrix> ConstMapMat;
+	typedef Eigen::Map<Matrix> MapMat;
+
+	// Image dimension
+	const int& img_rows = channel_rows;
+	const int  img_cols = n_in_channel * channel_cols;
+	const int  img_size = img_rows * img_cols;
+	// Dimension of the convolution result for each output channel
+	const int conv_rows = channel_rows - filter_rows + 1;
+	const int conv_cols = channel_cols - filter_cols + 1;
+
+	// Transform original matrix to "lower" form
+	// I feel that it is better called the "flat" form
+	const int flat_rows = conv_rows * n_obs;
+	const int flat_cols = filter_rows * img_cols;
+	RMatrix flat_mat(flat_rows, flat_cols);
+	Scalar* flat_mat_data = flat_mat.data();
+	for(int i = 0; i < n_obs; i++, src += img_size)
+	{
+		// Current source image
+		ConstMapMat img(src, img_rows, img_cols);
+		// Source image is cut into 'conv_rows' overlapped blocks
+		// The j-th block is copied to the 'i * conv_rows + j'-th row of 'flat_mat'
+		for(int j = 0; j < conv_rows; j++, flat_mat_data += flat_cols)
+		{
+			MapMat flat_mat_row(flat_mat_data, filter_rows, img_cols);
+			flat_mat_row.noalias() = img.block(j, 0, filter_rows, img_cols);
+		}
+	}
+
+	// Filters
+	const int filter_size = filter_rows * filter_cols;
+	ConstMapMat filter(filter_data, filter_size, n_in_channel * n_out_channel);
+
+	// Compute the convolution result
+    const int& res_rows = flat_rows;
+    const int  res_cols = conv_cols * n_out_channel;
+	Matrix res = Matrix::Zero(res_rows, res_cols);
+	int filter_start_col = 0;
+	int flat_mat_channel_start_col = 0;
+	const int flat_mat_channel_step = filter_rows * channel_cols;
+	for(int i = 0; i < n_in_channel; i++, flat_mat_channel_start_col += flat_mat_channel_step, filter_start_col += n_out_channel)
+	{
+		int flat_mat_start_col = flat_mat_channel_start_col;
+		int res_start_col = 0;
+		for(int j = 0; j < conv_cols; j++, flat_mat_start_col += filter_rows, res_start_col += n_out_channel)
+		{
+			res.block(0, res_start_col, flat_rows, n_out_channel).noalias() += flat_mat.block(0, flat_mat_start_col, flat_rows, filter_size) *
+					filter.block(0, filter_start_col, filter_size, n_out_channel);
+		}
+	}
+
+    std::cout << res << std::endl << std::endl;
+
+	// The layout of 'res' is very complicated
+	/*
+	 * obs0_out0[0, 0] obs0_out1[0, 0] obs0_out2[0, 0] obs0_out0[0, 1] obs0_out1[0, 1] obs0_out2[0, 1] ...
+	 * obs0_out0[1, 0] obs0_out1[1, 0] obs0_out2[1, 0] obs0_out0[1, 1] obs0_out1[1, 1] obs0_out2[1, 1] ...
+	 * obs0_out0[2, 0] obs0_out1[2, 0] obs0_out2[2, 0] obs0_out0[2, 1] obs0_out1[2, 1] obs0_out2[2, 1] ...
+	 * obs1_out0[0, 0] obs1_out1[0, 0] obs1_out2[0, 0] obs1_out0[0, 1] obs1_out1[0, 1] obs1_out2[0, 1] ...
+	 * obs1_out0[1, 0] obs1_out1[1, 0] obs1_out2[1, 0] obs1_out0[1, 1] obs1_out1[1, 1] obs1_out2[1, 1] ...
+	 * obs1_out0[2, 0] obs1_out1[2, 0] obs1_out2[2, 0] obs1_out0[2, 1] obs1_out1[2, 1] obs1_out2[2, 1] ...
+	 * ...
+     *
+	 */
+	// obs<k>_out<l> means the convolution result of the k-th image on the l-th output channel
+	// [i, j] gives the matrix indices
+
+	// The destination has the layout
+	/*
+	 * obs0_out0[0, 0] obs0_out0[0, 1] obs0_out0[0, 2] obs0_out1[0, 0] obs0_out1[0, 1] obs0_out1[0, 2] ...
+	 * obs0_out0[1, 0] obs0_out0[1, 1] obs0_out0[1, 2] obs0_out1[1, 0] obs0_out1[1, 1] obs0_out1[1, 2] ...
+	 * obs0_out0[2, 0] obs0_out0[2, 1] obs0_out0[2, 2] obs0_out1[2, 0] obs0_out1[2, 1] obs0_out1[2, 2] ...
+	 *
+	 */
+    // which in a larger scale looks like
+    // [obs0_out0 obs0_out1 obs0_out2 obs1_out0 obs1_out1 obs1_out2 obs2_out0 ...]
+
+	// Copy data to destination
+    // dest[a, b] corresponds to obs<k>_out<l>[i, j]
+    // where k = b / (conv_cols * n_out_channel),
+    //       l = (b % (conv_cols * n_out_channel)) / conv_cols
+    //       i = a,
+    //       j = b % conv_cols
+    // and then obs<k>_out<l>[i, j] corresponds to res[c, d]
+    // where c = k * conv_rows + i,
+    //       d = j * n_out_channel + l
+    const int& dest_rows = conv_rows;
+    const int  dest_cols = res_cols * n_obs;
+    int dest_col_head = 0;
+    const Scalar* res_data = res.data();
+    for(int b = 0; b < dest_cols; b++, dest_col_head += dest_rows)
+    {
+        const int k = b / res_cols;
+        const int l = (b % res_cols) / conv_cols;
+        const int j = b % conv_cols;
+        const int d = j * n_out_channel + l;
+        const int res_col_head = d * res_rows;
+        const int kk = k * conv_rows;
+        for(int a = 0; a < dest_rows; a++)
+        {
+            const int& i = a;
+            const int c = kk + i;
+            dest[dest_col_head + a] = res_data[res_col_head + c];
+        }
+    }
+}
+
+int test()
+{
+	const int n_obs = 2;
+	const int n_in_channel = 3;
+	const int n_out_channel = 2;
+	const int channel_rows = 5;
+	const int channel_cols = 4;
+	const int filter_rows = 3;
+	const int filter_cols = 2;
+
+	Eigen::MatrixXd img(channel_rows, channel_cols * n_in_channel * n_obs);
+    img << 1, 2, 3, 4,   2, 3, 4, 5,   3, 4, 5, 6,            6, 5, 4, 3,   5, 4, 3, 2,   4, 3, 2, 1,
+           1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,            1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,
+           0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0,            0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0,
+           1, 0, 1, 0,   0, 1, 0, 1,   1, 2, 3, 4,            1, 2, 3, 4,   2, 3, 4, 5,   3, 4, 5, 6,
+           0, 0, 1, 0,   0, 0, 1, 1,   1, 1, 1, 0,            0, 0, 0, 1,   2, 1, 2, 3,   1, 1, 0, 0;
+    std::cout << img << std::endl << std::endl;
+
+    Eigen::MatrixXd filter(filter_rows, filter_cols * n_in_channel * n_out_channel);
+    filter << 1, 0,   1, 0,          1, 1,   0, 0,          1, 1,   1, 1,
+              2, 1,   1, 2,          1, 1,   1, 1,          0, 0,   1, 1,
+              0, 1,   1, 0,          0, 0,   1, 1,          1, 1,   1, 1;
+    std::cout << filter << std::endl << std::endl;
+
+	const int conv_rows = channel_rows - filter_rows + 1;
+	const int conv_cols = channel_cols - filter_cols + 1;
+	const int dest_rows = conv_rows;
+	const int dest_cols = conv_cols * n_out_channel * n_obs;
+	Eigen::MatrixXd dest(dest_rows, dest_cols);
+
+	convolve_valid(img.data(), n_obs,
+			n_in_channel, n_out_channel, channel_rows, channel_cols,
+			filter.data(), filter_rows, filter_cols, dest.data());
+
+    std::cout << dest << std::endl << std::endl;
+
+    // 4, 5, 6,   4, 5, 6,            7, 9, 11,   2, 2, 2,             7, 9, 11,   9, 11, 13,
+    // 1, 2, 1,   2, 1, 2,            2, 2,  2,   1, 1, 1,             5, 7,  9,   5,  7,  9,
+    // 2, 2, 2,   1, 2, 2,            1, 1,  1,   1, 2, 3,             2, 2,  1,   5,  7,  8;
+
+    // 18, 23, 28,   15, 18, 21,
+    //  8, 11, 12,    8,  9, 12,
+    //  5,  5,  4,    7, 11, 13;
+
+	return 0;
+}
+
+
+
 #endif /* UTILS_CONVOLUTION_H_ */
