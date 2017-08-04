@@ -84,43 +84,24 @@ public:
         // Each column is an observation
         const int nobs = prev_layer_data.cols();
 
-        // Create a tensor for input image
-        // 1st index: index of observation
-        // 2nd index: index of input channel
-        // 3rd and 4th indices: the image matrix
-        // For example, in_tensor[i][j] is the image matrix for the j-th input channel of the i-th observation
-        ConstTensor4D in_tensor;
-        vector_to_tensor_4d(prev_layer_data.data(), nobs, m_in_channels, m_image_rows, m_image_cols, in_tensor);
-
         // Linear term, z = conv(in, w) + b
         m_z.resize(this->m_out_size, nobs);
         m_z.setZero();
-
-        // Tensor for output image
-        // 1st index: observation
-        // 2nd index: output channel
-        // 3rd and 4th indices: output image matrix
-        Tensor4D out_tensor;
-        vector_to_tensor_4d(m_z.data(), nobs, m_out_channels, m_out_rows, m_out_cols, out_tensor);
-
-        // For each output channel, z_j = sum_i(conv(in_i, w_ij)) + b_j
-        // z_j is an image (matrix), b_j is a scalar
-        // The final z stacks z_i together
-        //
-        // Observation
-        for(int k = 0; k < nobs; k++)
+        // Convolution
+        convolve_valid(
+            prev_layer_data.data(), true, nobs,
+        	m_in_channels, m_out_channels, m_image_rows, m_image_cols,
+            m_filter_data.data(), m_filter_rows, m_filter_cols,
+            m_z.data()
+        );
+        // Add bias terms
+        // Each column of m_z contains m_out_channels channels, and each channel has
+        // m_out_rows * m_out_cols elements
+        int channel_start_row = 0;
+        const int channel_nelem = m_out_rows * m_out_cols;
+        for(int i = 0; i < m_out_channels; i++, channel_start_row += channel_nelem)
         {
-            // Ouput channel
-            for(int j = 0; j < m_out_channels; j++)
-            {
-                // Input channel
-                for(int i = 0; i < m_in_channels; i++)
-                {
-                    convolve_valid(in_tensor[k][i], m_filter[i][j], out_tensor[k][j]);
-                }
-                // Add bias term
-                out_tensor[k][j].get().array() += m_bias[j];
-            }
+            m_z.block(channel_start_row, 0, channel_nelem, nobs).array() += m_bias[i];
         }
 
         // Apply activation function
@@ -147,10 +128,6 @@ public:
         Matrix& dLz = m_z;
         Activation::apply_jacobian(m_z, m_a, next_layer_data, dLz);
 
-        // Tensor for layer input
-        ConstTensor4D in_tensor;
-        vector_to_tensor_4d(prev_layer_data.data(), nobs, m_in_channels, m_image_rows, m_image_cols, in_tensor);
-
         // Tensor for d_L / d_z
         ConstTensor4D dLz_tensor;
         vector_to_tensor_4d(dLz.data(), nobs, m_out_channels, m_out_rows, m_out_cols, dLz_tensor);
@@ -170,19 +147,12 @@ public:
 
         // Derivative for weights
         m_df_data.setZero();
-        // Observation
-        for(int k = 0; k < nobs; k++)
-        {
-            // Input channel
-            for(int i = 0; i < m_in_channels; i++)
-            {
-                // Ouput channel
-                for(int j = 0; j < m_out_channels; j++)
-                {
-                    convolve_valid(in_tensor[k][i], dLz_tensor[k][j], m_df[i][j]);
-                }
-            }
-        }
+        convolve_valid(
+            prev_layer_data.data(), false, m_in_channels,
+        	nobs, m_out_channels, m_image_rows, m_image_cols,
+            dLz.data(), m_out_rows, m_out_cols,
+            m_df_data.data()
+        );
         m_df_data /= nobs;
 
         // Derivative for bias
