@@ -199,6 +199,7 @@ void convolve_valid(
         const int img_obs_cols = n_obs * img_cols;
         const int flat_size_per_obs = conv_rows * flat_cols;
         const Scalar* reader_col_start = src;
+        const std::size_t copy_bytes = sizeof(Scalar) * filter_rows;
         for(int i = 0; i < img_obs_cols; i++, reader_col_start += img_rows)
         {
             const Scalar* reader = reader_col_start;
@@ -207,9 +208,7 @@ void convolve_valid(
             const int writer_col = (i % img_cols) * filter_rows;
             Scalar* writer = flat_mat_data + flat_size_per_obs * obs + writer_col;
             for(; reader < reader_end; reader++, writer += flat_cols)
-            {
-                std::copy(reader, reader + filter_rows, writer);
-            }
+                std::memcpy(writer, reader, copy_bytes);
         }
     } else {
         const int img_obs_cols = n_obs * img_cols;
@@ -217,6 +216,7 @@ void convolve_valid(
         const int flat_size_per_obs = conv_rows * flat_cols;
         const int flat_cols_per_obs_channel = filter_rows * channel_cols;
         const Scalar* reader_col_start = src;
+        const std::size_t copy_bytes = sizeof(Scalar) * filter_rows;
         for(int i = 0; i < img_obs_cols; i++, reader_col_start += img_rows)
         {
             const Scalar* reader = reader_col_start;
@@ -226,9 +226,7 @@ void convolve_valid(
             const int writer_col = (i % channel_cols) * filter_rows;
             Scalar* writer = flat_mat_data + flat_size_per_obs * obs + flat_cols_per_obs_channel * channel + writer_col;
             for(; reader < reader_end; reader++, writer += flat_cols)
-            {
-                std::copy(reader, reader + filter_rows, writer);
-            }
+                std::memcpy(writer, reader, copy_bytes);
         }
     }
 
@@ -289,22 +287,16 @@ void convolve_valid(
     //       d = j * n_out_channel + l
     const int& dest_rows = conv_rows;
     const int  dest_cols = res_cols * n_obs;
-    int dest_col_head = 0;
     const Scalar* res_data = res.data();
-    for(int b = 0; b < dest_cols; b++, dest_col_head += dest_rows)
+    const std::size_t copy_bytes = sizeof(Scalar) * dest_rows;
+    for(int b = 0; b < dest_cols; b++, dest += dest_rows)
     {
         const int k = b / res_cols;
         const int l = (b % res_cols) / conv_cols;
         const int j = b % conv_cols;
         const int d = j * n_out_channel + l;
         const int res_col_head = d * res_rows;
-        const int kk = k * conv_rows;
-        for(int a = 0; a < dest_rows; a++)
-        {
-            const int& i = a;
-            const int c = kk + i;
-            dest[dest_col_head + a] = res_data[res_col_head + c];
-        }
+        std::memcpy(dest, res_data + res_col_head + k * conv_rows, copy_bytes);
     }
 }
 
