@@ -20,14 +20,7 @@ private:
     typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
     typedef Vector::AlignedMapType AlignedMapVec;
 
-    const int m_image_rows;   // Number of rows of the input image
-    const int m_image_cols;   // Number of columns of the input image
-    const int m_filter_rows;  // Number of rows of the filter
-    const int m_filter_cols;  // Number of columns of the filter
-    const int m_out_rows;     // Number of rows of the output image
-    const int m_out_cols;     // Number of columns of the output image
-    const int m_in_channels;  // Number of input channels
-    const int m_out_channels; // Number of output channels
+    const ConvDims m_dim;     // Various dimensions of convolution
 
     Tensor4D m_filter;        // Filter parameters. filter[i][j] is the filter
                               // matrix from in-channel i to out-channel j,
@@ -53,29 +46,27 @@ public:
                   const int in_channels, const int out_channels) :
         Layer(in_width * in_height * in_channels,
               (in_width - window_width + 1) * (in_height - window_height + 1) * out_channels),
-        m_image_rows(in_height), m_image_cols(in_width), m_filter_rows(window_height), m_filter_cols(window_width),
-        m_out_rows(in_height - window_height + 1), m_out_cols(in_width - window_width + 1),
-        m_in_channels(in_channels), m_out_channels(out_channels)
+        m_dim(in_channels, out_channels, in_height, in_width, window_height, window_width)
     {}
 
     void init(const Scalar& mu, const Scalar& sigma, RNG& rng)
     {
         // Set data dimension
-        const int filter_data_size = m_in_channels * m_out_channels * m_filter_rows * m_filter_cols;
+        const int filter_data_size = m_dim.in_channels * m_dim.out_channels * m_dim.filter_rows * m_dim.filter_cols;
         m_filter_data.resize(filter_data_size);
         m_df_data.resize(filter_data_size);
 
         // Create filter tensors
-        vector_to_tensor_4d(m_filter_data.data(), m_in_channels, m_out_channels, m_filter_rows, m_filter_cols, m_filter);
-        vector_to_tensor_4d(m_df_data.data(),     m_in_channels, m_out_channels, m_filter_rows, m_filter_cols, m_df);
+        vector_to_tensor_4d(m_filter_data.data(), m_dim.in_channels, m_dim.out_channels, m_dim.filter_rows, m_dim.filter_cols, m_filter);
+        vector_to_tensor_4d(m_df_data.data(),     m_dim.in_channels, m_dim.out_channels, m_dim.filter_rows, m_dim.filter_cols, m_df);
 
         // Random initialization of filter parameters
         set_normal_random(m_filter_data.data(), filter_data_size, rng, mu, sigma);
 
         // Bias term
-        m_bias.resize(m_out_channels);
-        m_db.resize(m_out_channels);
-        set_normal_random(m_bias.data(), m_out_channels, rng, mu, sigma);
+        m_bias.resize(m_dim.out_channels);
+        m_db.resize(m_dim.out_channels);
+        set_normal_random(m_bias.data(), m_dim.out_channels, rng, mu, sigma);
     }
 
     // http://cs231n.github.io/convolutional-networks/
@@ -88,18 +79,15 @@ public:
         m_z.resize(this->m_out_size, nobs);
         m_z.setZero();
         // Convolution
-        convolve_valid(
-            prev_layer_data.data(), true, nobs,
-        	m_in_channels, m_out_channels, m_image_rows, m_image_cols,
-            m_filter_data.data(), m_filter_rows, m_filter_cols,
-            m_z.data()
+        convolve_valid(m_dim, prev_layer_data.data(), true, nobs,
+            m_filter_data.data(), m_z.data()
         );
         // Add bias terms
-        // Each column of m_z contains m_out_channels channels, and each channel has
-        // m_out_rows * m_out_cols elements
+        // Each column of m_z contains m_dim.out_channels channels, and each channel has
+        // m_dim.conv_rows * m_dim.conv_cols elements
         int channel_start_row = 0;
-        const int channel_nelem = m_out_rows * m_out_cols;
-        for(int i = 0; i < m_out_channels; i++, channel_start_row += channel_nelem)
+        const int channel_nelem = m_dim.conv_rows * m_dim.conv_cols;
+        for(int i = 0; i < m_dim.out_channels; i++, channel_start_row += channel_nelem)
         {
             m_z.block(channel_start_row, 0, channel_nelem, nobs).array() += m_bias[i];
         }
@@ -130,7 +118,7 @@ public:
 
         // Tensor for d_L / d_z
         ConstTensor4D dLz_tensor;
-        vector_to_tensor_4d(dLz.data(), nobs, m_out_channels, m_out_rows, m_out_cols, dLz_tensor);
+        vector_to_tensor_4d(dLz.data(), nobs, m_dim.out_channels, m_dim.conv_rows, m_dim.conv_cols, dLz_tensor);
 
         // z_j = sum_i(conv(in_i, w_ij)) + b_j
         //
@@ -147,37 +135,35 @@ public:
 
         // Derivative for weights
         m_df_data.setZero();
-        convolve_valid(
-            prev_layer_data.data(), false, m_in_channels,
-        	nobs, m_out_channels, m_image_rows, m_image_cols,
-            dLz.data(), m_out_rows, m_out_cols,
-            m_df_data.data()
+        ConvDims back_conv_dim(nobs, m_dim.out_channels, m_dim.channel_rows, m_dim.channel_cols, m_dim.conv_rows, m_dim.conv_cols);
+        convolve_valid(back_conv_dim, prev_layer_data.data(), false, m_dim.in_channels,
+            dLz.data(), m_df_data.data()
         );
         m_df_data /= nobs;
 
         // Derivative for bias
         // Aggregate d_L / d_z in each output channel
-        ConstAlignedMapMat dLz_by_channel(dLz.data(), m_out_rows * m_out_cols, m_out_channels * nobs);
+        ConstAlignedMapMat dLz_by_channel(dLz.data(), m_dim.conv_rows * m_dim.conv_cols, m_dim.out_channels * nobs);
         Vector dLb = dLz_by_channel.colwise().sum();
         // Average over observations
-        ConstAlignedMapMat dLb_by_obs(dLb.data(), m_out_channels, nobs);
+        ConstAlignedMapMat dLb_by_obs(dLb.data(), m_dim.out_channels, nobs);
         m_db.noalias() = dLb_by_obs.rowwise().mean();
 
         // Tensor for m_din
         m_din.resize(this->m_in_size, nobs);
         m_din.setZero();
         Tensor4D din_tensor;
-        vector_to_tensor_4d(m_din.data(), nobs, m_in_channels, m_image_rows, m_image_cols, din_tensor);
+        vector_to_tensor_4d(m_din.data(), nobs, m_dim.in_channels, m_dim.channel_rows, m_dim.channel_cols, din_tensor);
 
         // Compute d_L / d_in = conv_full(d_L / d_z, w_rotate)
         // Observation
         for(int k = 0; k < nobs; k++)
         {
             // Input channel
-            for(int i = 0; i < m_in_channels; i++)
+            for(int i = 0; i < m_dim.in_channels; i++)
             {
                 // Ouput channel
-                for(int j = 0; j < m_out_channels; j++)
+                for(int j = 0; j < m_dim.out_channels; j++)
                 {
                     convolve_full(dLz_tensor[k][j], m_filter[i][j], din_tensor[k][i]);
                 }
