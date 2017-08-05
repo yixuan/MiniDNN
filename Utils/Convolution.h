@@ -180,12 +180,10 @@ void convolve_valid(
 	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
 	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> RMatrix;
 	typedef Eigen::Map<const Matrix> ConstMapMat;
-	typedef Eigen::Map<Matrix> MapMat;
 
 	// Image dimension
 	const int& img_rows = channel_rows;
 	const int  img_cols = n_in_channel * channel_cols;
-	const int  img_size = img_rows * img_cols;
 	// Dimension of the convolution result for each output channel
 	const int conv_rows = channel_rows - filter_rows + 1;
 	const int conv_cols = channel_cols - filter_cols + 1;
@@ -198,33 +196,38 @@ void convolve_valid(
 	Scalar* flat_mat_data = flat_mat.data();
     if(image_outer_loop)
     {
-        for(int i = 0; i < n_obs; i++, src += img_size)
+        const int img_obs_cols = n_obs * img_cols;
+        const int flat_size_per_obs = conv_rows * flat_cols;
+        const Scalar* reader_col_start = src;
+        for(int i = 0; i < img_obs_cols; i++, reader_col_start += img_rows)
         {
-            // Current source image
-            ConstMapMat img(src, img_rows, img_cols);
-            // Source image is cut into 'conv_rows' overlapped blocks
-            // The j-th block is copied to the 'i * conv_rows + j'-th row of 'flat_mat'
-            for(int j = 0; j < conv_rows; j++, flat_mat_data += flat_cols)
+            const Scalar* reader = reader_col_start;
+            const Scalar* const reader_end = reader + conv_rows;
+            const int obs = i / img_cols;
+            const int writer_col = (i % img_cols) * filter_rows;
+            Scalar* writer = flat_mat_data + flat_size_per_obs * obs + writer_col;
+            for(; reader < reader_end; reader++, writer += flat_cols)
             {
-                MapMat flat_mat_row(flat_mat_data, filter_rows, img_cols);
-                flat_mat_row.noalias() = img.block(j, 0, filter_rows, img_cols);
+                std::copy(reader, reader + filter_rows, writer);
             }
         }
     } else {
-        const int channel_size = channel_rows * channel_cols;
-        for(int k = 0; k < n_in_channel; k++)
+        const int img_obs_cols = n_obs * img_cols;
+        const int channel_obs_cols = n_obs * channel_cols;
+        const int flat_size_per_obs = conv_rows * flat_cols;
+        const int flat_cols_per_obs_channel = filter_rows * channel_cols;
+        const Scalar* reader_col_start = src;
+        for(int i = 0; i < img_obs_cols; i++, reader_col_start += img_rows)
         {
-            flat_mat_data = flat_mat.data() + k * filter_rows * channel_cols;
-            for(int i = 0; i < n_obs; i++, src += channel_size)
+            const Scalar* reader = reader_col_start;
+            const Scalar* const reader_end = reader + conv_rows;
+            const int obs = (i % channel_obs_cols) / channel_cols;
+            const int channel = i / channel_obs_cols;
+            const int writer_col = (i % channel_cols) * filter_rows;
+            Scalar* writer = flat_mat_data + flat_size_per_obs * obs + flat_cols_per_obs_channel * channel + writer_col;
+            for(; reader < reader_end; reader++, writer += flat_cols)
             {
-                // Current channel
-                ConstMapMat channel(src, channel_rows, channel_cols);
-                for(int j = 0; j < conv_rows; j++, flat_mat_data += flat_cols)
-                {
-                    MapMat flat_mat_row(flat_mat_data, filter_rows, channel_cols);
-                    flat_mat_row.noalias() = channel.block(j, 0, filter_rows, channel_cols);
-                }
-
+                std::copy(reader, reader + filter_rows, writer);
             }
         }
     }
