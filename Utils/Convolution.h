@@ -171,7 +171,7 @@ void convolve_full(
  */
 //
 // Algorithm is based on https://arxiv.org/abs/1706.06873
-void convolve_valid(
+inline void convolve_valid(
 	const Scalar* src, const bool image_outer_loop, const int n_obs,
 	const int n_in_channel, const int n_out_channel, const int channel_rows, const int channel_cols,
 	const Scalar* filter_data, const int filter_rows, const int filter_cols,
