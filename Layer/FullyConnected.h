@@ -115,7 +115,7 @@ public:
     void set_parameters(const std::vector<Scalar>& param)
     {
         if(static_cast<int>(param.size()) != m_weight.size() + m_bias.size())
-            throw std::invalid(a)rgument("Parameter size does not match");
+            throw std::invalid_argument("Parameter size does not match");
 
         std::copy(param.begin(), param.begin() + m_weight.size(), m_weight.data());
         std::copy(param.begin() + m_weight.size(), param.end(), m_bias.data());
