@@ -3,6 +3,7 @@
 
 #include <Eigen/Core>
 #include <vector>
+#include <stdexcept>
 #include "../Config.h"
 #include "../Layer.h"
 #include "../Utils/Convolution.h"
@@ -98,24 +99,24 @@ public:
         const int nobs = prev_layer_data.cols();
 
         // After forward stage, m_z contains z = conv(in, w) + b
-        // Now we need to calculate d_L / d_z = (d_a / d_z) * (d_L / d_a)
-        // d_L / d_a is computed in the next layer, contained in next_layer_data
-        // The Jacobian matrix J = d_a / d_z is determined by the activation function
+        // Now we need to calculate d(L) / d(z) = [d(a) / d(z)] * [d(L) / d(a)]
+        // d(L) / d(a) is computed in the next layer, contained in next_layer_data
+        // The Jacobian matrix J = d(a) / d(z) is determined by the activation function
         Matrix& dLz = m_z;
         Activation::apply_jacobian(m_z, m_a, next_layer_data, dLz);
 
         // z_j = sum_i(conv(in_i, w_ij)) + b_j
         //
-        // d_zk / d_wij = 0, if k != j
-        // d_L / d_wij = (d_zj / d_wij) * (d_L / d_zj) = sum_i((d_zj / d_wij) * (d_L / d_zj))
-        // = sum_i(conv(in_i, d_L / d_zj))
+        // d(z_k) / d(w_ij) = 0, if k != j
+        // d(L) / d(w_ij) = [d(z_j) / d(w_ij)] * [d(L) / d(z_j)] = sum_i{ [d(z_j) / d(w_ij)] * [d(L) / d(z_j)] }
+        // = sum_i(conv(in_i, d(L) / d(z_j)))
         //
         // z_j is an image (matrix), b_j is a scalar
-        // d_zj / d_bj = a matrix of the same size of d_zj filled with 1
-        // d_L / d_bj = (d_L / d_zj).sum()
+        // d(z_j) / d(b_j) = a matrix of the same size of d(z_j) filled with 1
+        // d(L) / d(b_j) = (d(L) / d(z_j)).sum()
         //
-        // d_zj / d_ini = conv_full_op(w_ij_rotate)
-        // d_L / d_ini = sum_j((d_zj / d_ini) * (d_L / d_zj)) = sum_j(conv_full(d_L / d_zj, w_ij_rotate))
+        // d(z_j) / d(in_i) = conv_full_op(w_ij_rotate)
+        // d(L) / d(in_i) = sum_j((d(z_j) / d(in_i)) * (d(L) / d(z_j))) = sum_j(conv_full(d(L) / d(z_j), w_ij_rotate))
 
         // Derivative for weights
         ConvDims back_conv_dim(nobs, m_dim.out_channels, m_dim.channel_rows, m_dim.channel_cols, m_dim.conv_rows, m_dim.conv_cols);
@@ -125,14 +126,14 @@ public:
         m_df_data /= nobs;
 
         // Derivative for bias
-        // Aggregate d_L / d_z in each output channel
+        // Aggregate d(L) / d(z) in each output channel
         ConstAlignedMapMat dLz_by_channel(dLz.data(), m_dim.conv_rows * m_dim.conv_cols, m_dim.out_channels * nobs);
         Vector dLb = dLz_by_channel.colwise().sum();
         // Average over observations
         ConstAlignedMapMat dLb_by_obs(dLb.data(), m_dim.out_channels, nobs);
         m_db.noalias() = dLb_by_obs.rowwise().mean();
 
-        // Compute d_L / d_in = conv_full(d_L / d_z, w_rotate)
+        // Compute d(L) / d_in = conv_full(d(L) / d(z), w_rotate)
         m_din.resize(this->m_in_size, nobs);
         ConvDims conv_full_dim(m_dim.out_channels, m_dim.in_channels, m_dim.conv_rows, m_dim.conv_cols, m_dim.filter_rows, m_dim.filter_cols);
         convolve_full(conv_full_dim, dLz.data(), nobs,
@@ -169,7 +170,7 @@ public:
     void set_parameters(const std::vector<Scalar>& param)
     {
         if(static_cast<int>(param.size()) != m_filter_data.size() + m_bias.size())
-            throw std::invalid_argument("Parameter size does not match");
+            throw std::invalid(a)rgument("Parameter size does not match");
 
         std::copy(param.begin(), param.begin() + m_filter_data.size(), m_filter_data.data());
         std::copy(param.begin() + m_filter_data.size(), param.end(), m_bias.data());

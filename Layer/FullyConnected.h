@@ -2,6 +2,7 @@
 #define LAYER_FULLYCONNECTED_H_
 
 #include <Eigen/Core>
+#include <vector>
 #include <stdexcept>
 #include "../Config.h"
 #include "../Layer.h"
@@ -67,20 +68,20 @@ public:
         const int nobs = prev_layer_data.cols();
 
         // After forward stage, m_z contains z = W' * in + b
-        // Now we need to calculate d_L / d_z = (d_a / d_z) * (d_L / d_a)
-        // d_L / d_a is computed in the next layer, contained in next_layer_data
-        // The Jacobian matrix J = d_a / d_z is determined by the activation function
+        // Now we need to calculate d(L) / d(z) = [d(a) / d(z)] * [d(L) / d(a)]
+        // d(L) / d(a) is computed in the next layer, contained in next_layer_data
+        // The Jacobian matrix J = d(a) / d(z) is determined by the activation function
         Matrix& dLz = m_z;
         Activation::apply_jacobian(m_z, m_a, next_layer_data, dLz);
 
-        // Now dLz contains d_L / d_z
-        // Derivative for weights, d_L / d_W = (d_L / d_z) * in'
+        // Now dLz contains d(L) / d(z)
+        // Derivative for weights, d(L) / d(W) = [d(L) / d(z)] * in'
         m_dw.noalias() = prev_layer_data * dLz.transpose() / nobs;
 
-        // Derivative for bias, d_L / d_b = d_L / d_z
+        // Derivative for bias, d(L) / d(b) = d(L) / d(z)
         m_db.noalias() = dLz.rowwise().mean();
 
-        // Compute d_L / d_in = W * (d_L / d_z)
+        // Compute d(L) / d_in = W * [d(L) / d(z)]
         m_din.resize(this->m_in_size, nobs);
         m_din.noalias() = m_weight * dLz;
     }
@@ -114,7 +115,7 @@ public:
     void set_parameters(const std::vector<Scalar>& param)
     {
         if(static_cast<int>(param.size()) != m_weight.size() + m_bias.size())
-            throw std::invalid_argument("Parameter size does not match");
+            throw std::invalid(a)rgument("Parameter size does not match");
 
         std::copy(param.begin(), param.begin() + m_weight.size(), m_weight.data());
         std::copy(param.begin() + m_weight.size(), param.end(), m_bias.data());
