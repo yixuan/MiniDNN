@@ -84,7 +84,10 @@ struct ConvDims
         conv_rows(channel_rows_ - filter_rows_ + 1), conv_cols(channel_cols_ - filter_cols_ + 1)
     {}
 };
-// Helper function to "flatten" source images as described in the paper
+// Transform original matrix to "lower" form as described in the MEC paper
+// I feel that it is better called the "flat" form
+//
+// Helper function to "flatten" source images
 // 'flat_mat' will be overwritten
 // We focus on one channel, and let 'stride' be the distance between two images
 inline void flatten_mat(
@@ -92,14 +95,11 @@ inline void flatten_mat(
     Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>& flat_mat
 )
 {
-    // Transform original matrix to "lower" form as described in the MEC paper
-	// I feel that it is better called the "flat" form
-	Scalar* writer = flat_mat.data();
-
     // Number of bytes in the segment that will be copied at one time
     const int& segment_size = dim.filter_rows;
     const std::size_t copy_bytes = sizeof(Scalar) * segment_size;
 
+    Scalar* writer = flat_mat.data();
     const int channel_size = dim.channel_rows * dim.channel_cols;
     for(int i = 0; i < n_obs; i++, src += stride)
     {
@@ -114,6 +114,8 @@ inline void flatten_mat(
         }
     }
 }
+// A special matrix product. We select a window from 'mat1' and calculates its product with 'mat2',
+// and progressively move the window to the right
 inline void moving_product(
     const int step,
     const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>& mat1,
@@ -132,7 +134,7 @@ inline void moving_product(
         res.block(0, res_start_col, row1, col2).noalias() += mat1.block(0, left_end, row1, row2) * mat2;
     }
 }
-// The main convolution function
+// The main convolution function using the "valid" rule
 inline void convolve_valid(
     const ConvDims& dim,
 	const Scalar* src, const bool image_outer_loop, const int n_obs, const Scalar* filter_data,
@@ -220,6 +222,7 @@ inline void convolve_valid(
 
 
 
+// The moving_product() function for the "full" rule
 inline void moving_product(
     const int padding, const int step,
     const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>& mat1,
@@ -259,7 +262,7 @@ inline void moving_product(
         }
     }
 }
-// The main convolution function
+// The main convolution function for the "full" rule
 inline void convolve_full(
     const ConvDims& dim,
 	const Scalar* src, const int n_obs, const Scalar* filter_data,
@@ -295,7 +298,9 @@ inline void convolve_full(
     const int channel_stride = pad_rows * dim.channel_cols;
     RMatrix flat_mat(flat_rows, flat_cols);
 
-    // We need to rotate the filters, which is equivalent to reversing the vector of each filter
+    // The processing of filters are different from the "valid" rule in two ways:
+    // 1. The layout of input channels and output channels are switched
+    // 2. The filters need to be rotated, which is equivalent to reversing the vector of each filter
     // We also separate filters that belong to different input channels
     std::vector<Matrix> filters_in(dim.in_channels);
     const int filter_size = dim.filter_rows * dim.filter_cols;
@@ -318,7 +323,6 @@ inline void convolve_full(
 
     const int& step = dim.filter_rows;
     const int filter_padding = padding_left * dim.filter_rows;
-
     for(int i = 0; i < dim.in_channels; i++, src += channel_stride)
     {
         // Flatten source image
@@ -327,6 +331,7 @@ inline void convolve_full(
         moving_product(filter_padding, step, flat_mat, filters_in[i], res);
     }
 
+    // Copy results to destination
     const int& dest_rows = conv_rows;
     const int  dest_cols = res_cols * n_obs;
     const Scalar* res_data = res.data();

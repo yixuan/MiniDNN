@@ -20,23 +20,18 @@ private:
 
     const ConvDims m_dim;     // Various dimensions of convolution
 
-    Vector m_filter_data;     // Filter parameters. filter[i][j] is the filter
-                              // matrix from in-channel i to out-channel j,
-                              // i = 0, 1, ..., in_channels-1
-                              // j = 0, 1, ..., out_channels-1
-                              // Each filter[i][j] is of size (filter_rows x filter_cols)
-                              // Vector that actually stores the filter data
+    Vector m_filter_data;     // Filter parameters. Total length is
                               // (in_channels x out_channels x filter_rows x filter_cols)
+                              // See Utils/Convolution.h for its layout
 
-    Vector m_df_data;         // Derivative of filters
-                              // Vector that actually stores the filter derivatives, same dimension as m_filter_data
+    Vector m_df_data;         // Derivative of filters, same dimension as m_filter_data
 
     Vector m_bias;            // Bias term for the output channels, out_channels x 1. (One bias term per channel)
     Vector m_db;              // Derivative of bias, same dimension as m_bias
 
     Matrix m_z;               // Linear term, z = conv(in, w) + b. Each column is an observation
     Matrix m_a;               // Output of this layer, a = act(z)
-    Matrix m_din;             // Derivative of the input of this layer.
+    Matrix m_din;             // Derivative of the input of this layer
                               // Note that input of this layer is also the output of previous layer
 
 public:
