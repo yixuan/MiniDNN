@@ -111,7 +111,7 @@ public:
     Network() :
         m_default_rng(1),
         m_rng(m_default_rng),
-		m_output(NULL),
+        m_output(NULL),
         m_default_callback(),
         m_callback(&m_default_callback)
     {}
@@ -119,7 +119,7 @@ public:
     Network(RNG& rng) :
         m_default_rng(1),
         m_rng(rng),
-		m_output(NULL),
+        m_output(NULL),
         m_default_callback(),
         m_callback(&m_default_callback)
     {}

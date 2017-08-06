@@ -66,11 +66,11 @@ struct ConvDims
     const int filter_rows;
     const int filter_cols;
     // Image dimension -- one observation with all channels
-	const int img_rows;
-	const int img_cols;
-	// Dimension of the convolution result for each output channel
-	const int conv_rows;
-	const int conv_cols;
+    const int img_rows;
+    const int img_cols;
+    // Dimension of the convolution result for each output channel
+    const int conv_rows;
+    const int conv_cols;
 
     ConvDims(
         const int in_channels_, const int out_channels_,
@@ -137,16 +137,16 @@ inline void moving_product(
 // The main convolution function using the "valid" rule
 inline void convolve_valid(
     const ConvDims& dim,
-	const Scalar* src, const bool image_outer_loop, const int n_obs, const Scalar* filter_data,
-	Scalar* dest)
+    const Scalar* src, const bool image_outer_loop, const int n_obs, const Scalar* filter_data,
+    Scalar* dest)
 {
-	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> RMatrix;
-	typedef Eigen::Map<const Matrix> ConstMapMat;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> RMatrix;
+    typedef Eigen::Map<const Matrix> ConstMapMat;
 
     // Flat matrix
     const int flat_rows = dim.conv_rows * n_obs;
-	const int flat_cols = dim.filter_rows * dim.channel_cols;
+    const int flat_cols = dim.filter_rows * dim.channel_cols;
     const int channel_size = dim.channel_rows * dim.channel_cols;
     // Distance between two images
     const int img_stride = image_outer_loop ? (dim.img_rows * dim.img_cols) : channel_size;
@@ -157,7 +157,7 @@ inline void convolve_valid(
     // Convolution results
     const int& res_rows = flat_rows;
     const int res_cols = dim.conv_cols * dim.out_channels;
-	Matrix res = Matrix::Zero(res_rows, res_cols);
+    Matrix res = Matrix::Zero(res_rows, res_cols);
 
     const int& step = dim.filter_rows;
     const int filter_size = dim.filter_rows * dim.filter_cols;
@@ -172,31 +172,31 @@ inline void convolve_valid(
         moving_product(step, flat_mat, filter, res);
     }
 
-	// The layout of 'res' is very complicated
-	/*
-	 * obs0_out0[0, 0] obs0_out1[0, 0] obs0_out2[0, 0] obs0_out0[0, 1] obs0_out1[0, 1] obs0_out2[0, 1] ...
-	 * obs0_out0[1, 0] obs0_out1[1, 0] obs0_out2[1, 0] obs0_out0[1, 1] obs0_out1[1, 1] obs0_out2[1, 1] ...
-	 * obs0_out0[2, 0] obs0_out1[2, 0] obs0_out2[2, 0] obs0_out0[2, 1] obs0_out1[2, 1] obs0_out2[2, 1] ...
-	 * obs1_out0[0, 0] obs1_out1[0, 0] obs1_out2[0, 0] obs1_out0[0, 1] obs1_out1[0, 1] obs1_out2[0, 1] ...
-	 * obs1_out0[1, 0] obs1_out1[1, 0] obs1_out2[1, 0] obs1_out0[1, 1] obs1_out1[1, 1] obs1_out2[1, 1] ...
-	 * obs1_out0[2, 0] obs1_out1[2, 0] obs1_out2[2, 0] obs1_out0[2, 1] obs1_out1[2, 1] obs1_out2[2, 1] ...
-	 * ...
+    // The layout of 'res' is very complicated
+    /*
+     * obs0_out0[0, 0] obs0_out1[0, 0] obs0_out2[0, 0] obs0_out0[0, 1] obs0_out1[0, 1] obs0_out2[0, 1] ...
+     * obs0_out0[1, 0] obs0_out1[1, 0] obs0_out2[1, 0] obs0_out0[1, 1] obs0_out1[1, 1] obs0_out2[1, 1] ...
+     * obs0_out0[2, 0] obs0_out1[2, 0] obs0_out2[2, 0] obs0_out0[2, 1] obs0_out1[2, 1] obs0_out2[2, 1] ...
+     * obs1_out0[0, 0] obs1_out1[0, 0] obs1_out2[0, 0] obs1_out0[0, 1] obs1_out1[0, 1] obs1_out2[0, 1] ...
+     * obs1_out0[1, 0] obs1_out1[1, 0] obs1_out2[1, 0] obs1_out0[1, 1] obs1_out1[1, 1] obs1_out2[1, 1] ...
+     * obs1_out0[2, 0] obs1_out1[2, 0] obs1_out2[2, 0] obs1_out0[2, 1] obs1_out1[2, 1] obs1_out2[2, 1] ...
+     * ...
      *
-	 */
-	// obs<k>_out<l> means the convolution result of the k-th image on the l-th output channel
-	// [i, j] gives the matrix indices
+     */
+    // obs<k>_out<l> means the convolution result of the k-th image on the l-th output channel
+    // [i, j] gives the matrix indices
 
-	// The destination has the layout
-	/*
-	 * obs0_out0[0, 0] obs0_out0[0, 1] obs0_out0[0, 2] obs0_out1[0, 0] obs0_out1[0, 1] obs0_out1[0, 2] ...
-	 * obs0_out0[1, 0] obs0_out0[1, 1] obs0_out0[1, 2] obs0_out1[1, 0] obs0_out1[1, 1] obs0_out1[1, 2] ...
-	 * obs0_out0[2, 0] obs0_out0[2, 1] obs0_out0[2, 2] obs0_out1[2, 0] obs0_out1[2, 1] obs0_out1[2, 2] ...
-	 *
-	 */
+    // The destination has the layout
+    /*
+     * obs0_out0[0, 0] obs0_out0[0, 1] obs0_out0[0, 2] obs0_out1[0, 0] obs0_out1[0, 1] obs0_out1[0, 2] ...
+     * obs0_out0[1, 0] obs0_out0[1, 1] obs0_out0[1, 2] obs0_out1[1, 0] obs0_out1[1, 1] obs0_out1[1, 2] ...
+     * obs0_out0[2, 0] obs0_out0[2, 1] obs0_out0[2, 2] obs0_out1[2, 0] obs0_out1[2, 1] obs0_out1[2, 2] ...
+     *
+     */
     // which in a larger scale looks like
     // [obs0_out0 obs0_out1 obs0_out2 obs1_out0 obs1_out1 obs1_out2 obs2_out0 ...]
 
-	// Copy data to destination
+    // Copy data to destination
     // dest[a, b] corresponds to obs<k>_out<l>[i, j]
     // where k = b / (conv_cols * out_channels),
     //       l = (b % (conv_cols * out_channels)) / conv_cols
@@ -265,12 +265,12 @@ inline void moving_product(
 // The main convolution function for the "full" rule
 inline void convolve_full(
     const ConvDims& dim,
-	const Scalar* src, const int n_obs, const Scalar* filter_data,
-	Scalar* dest)
+    const Scalar* src, const int n_obs, const Scalar* filter_data,
+    Scalar* dest)
 {
-	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> RMatrix;
-	typedef Eigen::Map<const Matrix> ConstMapMat;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> RMatrix;
+    typedef Eigen::Map<const Matrix> ConstMapMat;
 
     // Padding sizes
     const int padding_top = dim.filter_rows - 1;
@@ -293,7 +293,7 @@ inline void convolve_full(
 
     // Flat matrix
     const int flat_rows = conv_rows * n_obs;
-	const int flat_cols = dim.filter_rows * dim.channel_cols;
+    const int flat_cols = dim.filter_rows * dim.channel_cols;
     const int img_stride = pad_rows * dim.img_cols;
     const int channel_stride = pad_rows * dim.channel_cols;
     RMatrix flat_mat(flat_rows, flat_cols);
@@ -319,7 +319,7 @@ inline void convolve_full(
     // Convolution results
     const int& res_rows = flat_rows;
     const int res_cols = conv_cols * dim.out_channels;
-	Matrix res = Matrix::Zero(res_rows, res_cols);
+    Matrix res = Matrix::Zero(res_rows, res_cols);
 
     const int& step = dim.filter_rows;
     const int filter_padding = padding_left * dim.filter_rows;
