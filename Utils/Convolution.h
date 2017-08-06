@@ -417,16 +417,16 @@ inline void convolve_full(
     // We also separate filters that belong to different input channels
     std::vector<Matrix> filters_in(dim.in_channels);
     const int filter_size = dim.filter_rows * dim.filter_cols;
-    const int filter_stride = filter_size * dim.out_channels;
-    const Scalar* reader = filter_data;
+    const int nfilter = dim.in_channels * dim.out_channels;
     for(int i = 0; i < dim.in_channels; i++)
     {
         filters_in[i].resize(filter_size, dim.out_channels);
-
-        const Scalar* const reader_end = reader + filter_stride;
-        Scalar* writer = filters_in[i].data();
-        for(; reader < reader_end; reader += filter_size, writer += filter_size)
-            std::reverse_copy(reader, reader + filter_size, writer);
+    }
+    const Scalar* reader = filter_data;
+    for(int i = 0; i < nfilter; i++, reader += filter_size)
+    {
+        Scalar* writer = filters_in[i % dim.in_channels].data() + (i / dim.in_channels) * filter_size;
+        std::reverse_copy(reader, reader + filter_size, writer);
     }
 
     // Convolution results
@@ -437,7 +437,7 @@ inline void convolve_full(
     const int& step = dim.filter_rows;
     const int filter_padding = padding_left * dim.filter_rows;
 
-    for(int i = 0; i < dim.in_channels; i++, src += channel_stride, filter_data += filter_stride)
+    for(int i = 0; i < dim.in_channels; i++, src += channel_stride)
     {
         // Flatten source image
         flatten_mat(pad_dim, src, img_stride, n_obs, flat_mat);
