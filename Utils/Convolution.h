@@ -2,7 +2,6 @@
 #define UTILS_CONVOLUTION_H_
 
 #include <Eigen/Core>
-#include <vector>
 #include "../Config.h"
 
 // We assume the following memory layout:
