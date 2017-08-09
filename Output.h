@@ -4,7 +4,11 @@
 #include <Eigen/Core>
 #include "Config.h"
 
-// Output layer is a special layer that associates the last hidden layer with the target response variable
+///
+/// The interface of the output layer of a neural network model. The output
+/// layer is a special layer that associates the last hidden layer with the
+/// target response variable.
+///
 class Output
 {
 protected:

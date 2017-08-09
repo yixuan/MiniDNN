@@ -6,6 +6,16 @@
 
 class Network;
 
+///
+/// The interface and default implementation of the callback function during
+/// iterations. The purpose of this class is to allow users printing some
+/// messages in each epoch or mini-batch training, for example the time spent,
+/// the loss function values, etc.
+///
+/// This default implementation is a silent version of the callback function
+/// that basically does nothing. See the VerboseCallback class for a verbose
+/// version that prints the loss function value in each mini-batch.
+///
 class Callback
 {
 protected:

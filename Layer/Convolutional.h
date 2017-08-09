@@ -9,6 +9,13 @@
 #include "../Utils/Convolution.h"
 #include "../Utils/Random.h"
 
+///
+/// \ingroup Layers
+///
+/// Convolutional hidden layer
+///
+/// Currently only supports the "valid" rule of convolution.
+///
 template <typename Activation>
 class Convolutional: public Layer
 {
@@ -36,8 +43,19 @@ private:
                               // Note that input of this layer is also the output of previous layer
 
 public:
-    Convolutional(const int in_width, const int in_height, const int window_width, const int window_height,
-                  const int in_channels, const int out_channels) :
+    ///
+    /// Constructor
+    ///
+    /// \param in_width      Width of the input image in each channel.
+    /// \param in_height     Height of the input image in each channel.
+    /// \param in_channels   Number of input channels.
+    /// \param out_channels  Number of output channels.
+    /// \param window_width  Width of the filter.
+    /// \param window_height Height of the filter.
+    ///
+    Convolutional(const int in_width, const int in_height,
+                  const int in_channels, const int out_channels,
+				  const int window_width, const int window_height) :
         Layer(in_width * in_height * in_channels,
               (in_width - window_width + 1) * (in_height - window_height + 1) * out_channels),
         m_dim(in_channels, out_channels, in_height, in_width, window_height, window_width)

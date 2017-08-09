@@ -8,6 +8,11 @@
 #include "../Layer.h"
 #include "../Utils/Random.h"
 
+///
+/// \ingroup Layers
+///
+/// Fully connected hidden layer
+///
 template <typename Activation>
 class FullyConnected: public Layer
 {
@@ -27,6 +32,12 @@ private:
                       // Note that input of this layer is also the output of previous layer
 
 public:
+    ///
+    /// Constructor
+    ///
+    /// \param in_size  Number of input units.
+    /// \param out_size Number of output units.
+    ///
     FullyConnected(const int in_size, const int out_size) :
         Layer(in_size, out_size)
     {}
@@ -43,6 +54,7 @@ public:
         set_normal_random(m_bias.data(), m_bias.size(), rng, mu, sigma);
     }
 
+    // prev_layer_data: in_size x nobs
     void forward(const Matrix& prev_layer_data)
     {
         const int nobs = prev_layer_data.cols();
@@ -61,8 +73,8 @@ public:
         return m_a;
     }
 
-    // prev: in_size x nobs
-    // next: out_size x nobs
+    // prev_layer_data: in_size x nobs
+    // next_layer_data: out_size x nobs
     void backprop(const Matrix& prev_layer_data, const Matrix& next_layer_data)
     {
         const int nobs = prev_layer_data.cols();
