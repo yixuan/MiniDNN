@@ -4,6 +4,15 @@
 #include <Eigen/Core>
 #include "../Config.h"
 
+///
+/// \defgroup Activations Activation Functions
+///
+
+///
+/// \ingroup Activations
+///
+/// The identity activation function
+///
 class Identity
 {
 private:

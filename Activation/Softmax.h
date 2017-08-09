@@ -1,6 +1,11 @@
 #ifndef ACTIVATION_SOFTMAX_H_
 #define ACTIVATION_SOFTMAX_H_
 
+///
+/// \ingroup Activations
+///
+/// The softmax activation function
+///
 class Softmax
 {
 private:

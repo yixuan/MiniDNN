@@ -14,7 +14,6 @@
 ///
 /// \ingroup Layers
 ///
-///
 /// The interface of hidden layers in a neural network. It defines some common
 /// operations of hidden layers such as initialization, forward and backward
 /// propogation, and also functions to get/set parameters of the layer.

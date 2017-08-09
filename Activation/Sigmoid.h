@@ -4,6 +4,11 @@
 #include <Eigen/Core>
 #include "../Config.h"
 
+///
+/// \ingroup Activations
+///
+/// The sigmoid activation function
+///
 class Sigmoid
 {
 private:

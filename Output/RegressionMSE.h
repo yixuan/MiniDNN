@@ -5,6 +5,11 @@
 #include <stdexcept>
 #include "../Config.h"
 
+///
+/// \ingroup Outputs
+///
+/// Regression output layer using Mean Squared Error (MSE) criterion
+///
 class RegressionMSE: public Output
 {
 private:

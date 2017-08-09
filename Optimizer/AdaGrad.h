@@ -6,6 +6,11 @@
 #include "../Optimizer.h"
 #include "../Utils/sparsepp.h"
 
+///
+/// \ingroup Optimizers
+///
+/// The AdaGrad algorithm
+///
 class AdaGrad: public Optimizer
 {
 private:

@@ -7,6 +7,11 @@
 #include "../Callback.h"
 #include "../Network.h"
 
+///
+/// \ingroup Callbacks
+///
+/// Callback function that prints the loss function value in each mini-batch training
+///
 class VerboseCallback: public Callback
 {
 public:

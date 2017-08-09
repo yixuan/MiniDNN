@@ -5,6 +5,11 @@
 #include <stdexcept>
 #include "../Config.h"
 
+///
+/// \ingroup Outputs
+///
+/// Multi-class classification output layer using cross-entropy criterion
+///
 class MultiClassEntropy: public Output
 {
 private:

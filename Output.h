@@ -5,6 +5,12 @@
 #include "Config.h"
 
 ///
+/// \defgroup Outputs Output Layers
+///
+
+///
+/// \ingroup Outputs
+///
 /// The interface of the output layer of a neural network model. The output
 /// layer is a special layer that associates the last hidden layer with the
 /// target response variable.

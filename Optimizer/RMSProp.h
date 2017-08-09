@@ -6,6 +6,11 @@
 #include "../Optimizer.h"
 #include "../Utils/sparsepp.h"
 
+///
+/// \ingroup Optimizers
+///
+/// The RMSProp algorithm
+///
 class RMSProp: public Optimizer
 {
 private:

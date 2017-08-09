@@ -5,6 +5,11 @@
 #include <stdexcept>
 #include "../Config.h"
 
+///
+/// \ingroup Outputs
+///
+/// Binary classification output layer using cross-entropy criterion
+///
 class BinaryClassEntropy: public Output
 {
 private:

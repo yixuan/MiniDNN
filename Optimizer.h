@@ -5,7 +5,13 @@
 #include "Config.h"
 
 ///
-/// The interface of optimizers of parameters.
+/// \defgroup Optimizers Optimization Algorithms
+///
+
+///
+/// \ingroup Optimizers
+///
+/// The interface of optimization algorithms
 ///
 class Optimizer
 {

@@ -8,6 +8,13 @@
 #include "../Layer.h"
 #include "../Utils/FindMax.h"
 
+///
+/// \ingroup Layers
+///
+/// Max-pooling hidden layer
+///
+/// Currently only supports the "valid" rule of pooling.
+///
 template <typename Activation>
 class MaxPooling: public Layer
 {
@@ -33,6 +40,15 @@ private:
 public:
     // Currently we only implement the "valid" rule
     // https://stackoverflow.com/q/37674306
+    ///
+    /// Constructor
+    ///
+    /// \param in_width       Width of the input image in each channel.
+    /// \param in_height      Height of the input image in each channel.
+    /// \param in_channels    Number of input channels.
+    /// \param pooling_width  Width of the pooling window.
+    /// \param pooling_height Height of the pooling window.
+    ///
     MaxPooling(const int in_width, const int in_height, const int in_channels,
                const int pooling_width, const int pooling_height) :
         Layer(in_width * in_height * in_channels,
@@ -88,8 +104,8 @@ public:
 
     const Matrix& output() const { return m_a; }
 
-    // prev: in_size x nobs
-    // next: out_size x nobs
+    // prev_layer_data: in_size x nobs
+    // next_layer_data: out_size x nobs
     void backprop(const Matrix& prev_layer_data, const Matrix& next_layer_data)
     {
         const int nobs = prev_layer_data.cols();

@@ -4,6 +4,11 @@
 #include <Eigen/Core>
 #include "../Config.h"
 
+///
+/// \ingroup Activations
+///
+/// The ReLU activation function
+///
 class ReLU
 {
 private:

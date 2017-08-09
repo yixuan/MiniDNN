@@ -109,8 +109,8 @@ public:
         return m_a;
     }
 
-    // prev: in_size x nobs
-    // next: out_size x nobs
+    // prev_layer_data: in_size x nobs
+    // next_layer_data: out_size x nobs
     // https://grzegorzgwardys.wordpress.com/2016/04/22/8/
     void backprop(const Matrix& prev_layer_data, const Matrix& next_layer_data)
     {

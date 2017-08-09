@@ -5,6 +5,11 @@
 #include "../Config.h"
 #include "../Optimizer.h"
 
+///
+/// \ingroup Optimizers
+///
+/// The Stochastic Gradient Descent (SGD) algorithm
+///
 class SGD: public Optimizer
 {
 private:
