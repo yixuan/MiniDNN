@@ -11,6 +11,17 @@
 #include "Callback.h"
 #include "Utils/Random.h"
 
+///
+/// \defgroup Network Neural Network Model
+///
+
+///
+/// \ingroup Network
+///
+/// This class represents a neural network model that typically consists of a
+/// number of hidden layers and an output layer. It provides functions for
+/// network building, model fitting, and prediction, etc.
+///
 class Network
 {
 private:
@@ -27,9 +38,9 @@ private:
                                             // otherwise points to m_default_callback
 
     // Check dimensions of layers
-    void check_unit_sizes()
+    void check_unit_sizes() const
     {
-        const int nlayer = m_layers.size();
+        const int nlayer = num_layers();
         if(nlayer <= 1)
             return;
 
@@ -43,7 +54,7 @@ private:
     // Let each layer compute its output
     void forward(const Matrix& input)
     {
-        const int nlayer = m_layers.size();
+        const int nlayer = num_layers();
         if(nlayer <= 0)
             return;
 
@@ -66,7 +77,7 @@ private:
     template <typename TargetType>
     void backprop(const Matrix& input, const TargetType& target)
     {
-        const int nlayer = m_layers.size();
+        const int nlayer = num_layers();
         if(nlayer <= 0)
             return;
 
@@ -97,7 +108,7 @@ private:
     // Update parameters
     void update(Optimizer& opt)
     {
-        const int nlayer = m_layers.size();
+        const int nlayer = num_layers();
         if(nlayer <= 0)
             return;
 
@@ -108,6 +119,9 @@ private:
     }
 
 public:
+    ///
+    /// Default constructor that creates an empty neural network
+    ///
     Network() :
         m_default_rng(1),
         m_rng(m_default_rng),
@@ -116,6 +130,12 @@ public:
         m_callback(&m_default_callback)
     {}
 
+    ///
+    /// Constructor with a user-provided random number generator
+    ///
+    /// \param rng A user-provided random number generator object that inherits
+    ///            from the default RNG class.
+    ///
     Network(RNG& rng) :
         m_default_rng(1),
         m_rng(rng),
@@ -124,9 +144,12 @@ public:
         m_callback(&m_default_callback)
     {}
 
+    ///
+    /// Destructor that frees the added hidden layers and output layer
+    ///
     ~Network()
     {
-        const int nlayer = m_layers.size();
+        const int nlayer = num_layers();
         for(int i = 0; i < nlayer; i++)
         {
             delete m_layers[i];
@@ -136,13 +159,27 @@ public:
             delete m_output;
     }
 
-    // NOTE: layer is a pointer that will be deleted by the network object, so don't delete it outside
+    ///
+    /// Add a hidden layer to the neural network
+    ///
+    /// \param layer A pointer to a Layer object, typically constructed from
+    ///              layer classes such as FullyConnected and Convolutional.
+    ///              **NOTE**: the pointer will be handled and freed by the
+    ///              network object, so do not delete it manually.
+    ///
     void add_layer(Layer* layer)
     {
         m_layers.push_back(layer);
     }
 
-    // NOTE: output is a pointer that will be deleted by the network object, so don't delete it outside
+    ///
+    /// Set the output layer of the neural network
+    ///
+    /// \param output A pointer to an Output object, typically constructed from
+    ///               output layer classes such as RegressionMSE and MultiClassEntropy.
+    ///               **NOTE**: the pointer will be handled and freed by the
+    ///               network object, so do not delete it manually.
+    ///
     void set_output(Output* output)
     {
         if(m_output)
@@ -151,15 +188,41 @@ public:
         m_output = output;
     }
 
-    int layer_size() const { return m_layers.size(); }
+    ///
+    /// Number of hidden layers in the network
+    ///
+    int num_layers() const { return m_layers.size(); }
 
+    ///
+    /// Get the list of hidden layers of the network
+    ///
+    std::vector<const Layer*> get_layers() const
+    {
+        const int nlayer = num_layers();
+        std::vector<const Layer*> layers(nlayer);
+        std::copy(m_layers.begin(), m_layers.end(), layers.begin());
+        return layers;
+    }
+
+    ///
+    /// Set the callback function during model fitting
+    ///
+    /// \param callback A user-provided callback function object that inherits
+    ///                 from the default Callback class.
+    ///
     void set_callback(Callback& callback)
     {
         m_callback = &callback;
     }
 
-    // Initialize parameters using N(mu, sigma^2) distribution
-    // Random seed will be set if seed > 0
+    ///
+    /// Initialize layer parameters in the network using normal distribution
+    ///
+    /// \param mu    Mean of the normal distribution.
+    /// \param sigma Standard deviation of the normal distribution.
+    /// \param seed  Set the random seed of the %RNG if `seed > 0`, otherwise
+    ///              use the current random state.
+    ///
     void init(const Scalar& mu = Scalar(0), const Scalar& sigma = Scalar(0.01), int seed = -1)
     {
         check_unit_sizes();
@@ -167,7 +230,7 @@ public:
         if(seed > 0)
             m_rng.seed(seed);
 
-        const int nlayer = m_layers.size();
+        const int nlayer = num_layers();
         for(int i = 0; i < nlayer; i++)
         {
             m_layers[i]->init(mu, sigma, m_rng);
@@ -185,9 +248,12 @@ public:
         return m_output->loss(last_layer->output(), target);
     }
 
+    ///
+    /// Get the serialized layer parameters
+    ///
     std::vector< std::vector<Scalar> > get_parameters() const
     {
-        const int nlayer = m_layers.size();
+        const int nlayer = num_layers();
         std::vector< std::vector<Scalar> > res;
         res.reserve(nlayer);
         for(int i = 0; i < nlayer; i++)
@@ -198,9 +264,14 @@ public:
         return res;
     }
 
+    ///
+    /// Set the layer parameters
+    ///
+    /// \param param Serialized layer parameters
+    ///
     void set_parameters(const std::vector< std::vector<Scalar> >& param)
     {
-        const int nlayer = m_layers.size();
+        const int nlayer = num_layers();
         if(static_cast<int>(param.size()) != nlayer)
             throw std::invalid_argument("Parameter size does not match");
 
@@ -210,9 +281,12 @@ public:
         }
     }
 
+    ///
+    /// Get the serialized derivatives of layer parameters
+    ///
     std::vector< std::vector<Scalar> > get_derivatives() const
     {
-        const int nlayer = m_layers.size();
+        const int nlayer = num_layers();
         std::vector< std::vector<Scalar> > res;
         res.reserve(nlayer);
         for(int i = 0; i < nlayer; i++)
@@ -224,7 +298,7 @@ public:
     }
 
     ///
-    /// For debugging purpose: check gradients
+    /// Debugging tool to check parameter gradients
     ///
     template <typename TargetType>
     void check_gradient(const Matrix& input, const TargetType& target, int npoints, int seed = -1)
@@ -288,7 +362,7 @@ public:
         typedef Eigen::Matrix<typename PlainObjectX::Scalar, PlainObjectX::RowsAtCompileTime, PlainObjectX::ColsAtCompileTime> XType;
         typedef Eigen::Matrix<typename PlainObjectY::Scalar, PlainObjectY::RowsAtCompileTime, PlainObjectY::ColsAtCompileTime> YType;
 
-        const int nlayer = m_layers.size();
+        const int nlayer = num_layers();
         if(nlayer <= 0)
             return false;
 
@@ -332,7 +406,7 @@ public:
     // Make predictions
     Matrix predict(const Matrix& x)
     {
-        const int nlayer = m_layers.size();
+        const int nlayer = num_layers();
         if(nlayer <= 0)
             return Matrix();
 

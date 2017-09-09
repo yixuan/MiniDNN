@@ -2,10 +2,10 @@
 #define RNG_H_
 
 ///
-/// The interface and default implementation of the random number generator (RNG).
-/// The RNG is used to shuffle data and to initialize parameters of hidden layers.
+/// The interface and default implementation of the random number generator (%RNG).
+/// The %RNG is used to shuffle data and to initialize parameters of hidden layers.
 /// This default implementation is based on the public domain code by Ray Gardner
-/// <http://stjarnhimlen.se/snippets/rg_rand.c>
+/// <http://stjarnhimlen.se/snippets/rg_rand.c>.
 ///
 class RNG
 {

@@ -14,7 +14,7 @@ class Network;
 /// \ingroup Callbacks
 ///
 /// The interface and default implementation of the callback function during
-/// iterations. The purpose of this class is to allow users printing some
+/// model fitting. The purpose of this class is to allow users printing some
 /// messages in each epoch or mini-batch training, for example the time spent,
 /// the loss function values, etc.
 ///
