@@ -151,6 +151,8 @@ public:
         m_output = output;
     }
 
+    int layer_size() const { return m_layers.size(); }
+
     void set_callback(Callback& callback)
     {
         m_callback = &callback;
@@ -221,46 +223,57 @@ public:
         return res;
     }
 
-    /*
+    ///
+    /// For debugging purpose: check gradients
+    ///
     template <typename TargetType>
-    void check_gradient(const Matrix& input, const TargetType& target)
+    void check_gradient(const Matrix& input, const TargetType& target, int npoints, int seed = -1)
     {
+        if(seed > 0)
+            m_rng.seed(seed);
+
         this->forward(input);
         this->backprop(input, target);
         std::vector< std::vector<Scalar> > param = this->get_parameters();
         std::vector< std::vector<Scalar> > deriv = this->get_derivatives();
 
-        const Scalar eps = 1e-4;
-        for(unsigned int i = 0; i < deriv.size(); i++)
+        const Scalar eps = 1e-5;
+        const int nlayer = deriv.size();
+        for(int i = 0; i < npoints; i++)
         {
-            for(unsigned int j = 0; j < deriv[i].size(); j++)
-            {
-                Scalar old = param[i][j];
+            // Randomly select a layer
+            const int layer_id = int(m_rng.rand() * nlayer);
+            // Randomly pick a parameter, note that some layers may have no parameters
+            const int nparam = deriv[layer_id].size();
+            if(nparam < 1)  continue;
+            const int param_id = int(m_rng.rand() * nparam);
+            // Turbulate the parameter a little bit
+            const Scalar old = param[layer_id][param_id];
 
-                param[i][j] -= eps;
-                this->set_parameters(param);
-                this->forward(input);
-                this->backprop(input, target);
-                Scalar loss_pre = this->loss(target);
+            param[layer_id][param_id] -= eps;
+            this->set_parameters(param);
+            this->forward(input);
+            this->backprop(input, target);
+            const Scalar loss_pre = this->loss(target);
 
-                param[i][j] += eps * 2;
-                this->set_parameters(param);
-                this->forward(input);
-                this->backprop(input, target);
-                Scalar loss_post = this->loss(target);
+            param[layer_id][param_id] += eps * 2;
+            this->set_parameters(param);
+            this->forward(input);
+            this->backprop(input, target);
+            const Scalar loss_post = this->loss(target);
 
-                Scalar dest = (loss_post - loss_pre) / eps / 2;
+            const Scalar deriv_est = (loss_post - loss_pre) / eps / 2;
 
-                std::cout << "i = " << i << ", j = " << j <<
-                ", d = " << deriv[i][j] << ", dest = " << (loss_post - loss_pre) / eps / 2 <<
-                ", diff = " << dest - deriv[i][j] << std::endl;
+            std::cout << "[layer " << layer_id << ", param " << param_id <<
+            "] deriv = " << deriv[layer_id][param_id] << ", est = " << deriv_est <<
+            ", diff = " << deriv_est - deriv[layer_id][param_id] << std::endl;
 
-                param[i][j] = old;
-            }
+            param[layer_id][param_id] = old;
         }
+
+        // Restore original parameters
         this->set_parameters(param);
     }
-    */
 
     // Fit a model
     // Random seed will be set if seed > 0
