@@ -85,6 +85,7 @@ private:
         Layer* last_layer = m_layers[nlayer - 1];
 
         // Let output layer compute back-propagation data
+        m_output->check_target_data(target);
         m_output->evaluate(last_layer->output(), target);
 
         // If there is only one hidden layer, "prev_layer_data" will be the input data
