@@ -205,6 +205,11 @@ public:
     }
 
     ///
+    /// Get the output layer
+    ///
+    const Output* get_output() const { return m_output; }
+
+    ///
     /// Set the callback function that can be called during model fitting
     ///
     /// \param callback A user-provided callback function object that inherits
@@ -242,17 +247,6 @@ public:
         {
             m_layers[i]->init(mu, sigma, m_rng);
         }
-    }
-
-    // Compute the current loss function value
-    // This function is mainly used to report loss function value inside fit(),
-    // and can be assumed to be called after backprop()
-    template <typename TargetType>
-    Scalar loss(const TargetType& target) const
-    {
-        const Layer* last_layer = m_layers.back();
-
-        return m_output->loss(last_layer->output(), target);
     }
 
     ///
@@ -335,13 +329,13 @@ public:
             this->set_parameters(param);
             this->forward(input);
             this->backprop(input, target);
-            const Scalar loss_pre = this->loss(target);
+            const Scalar loss_pre = m_output->loss();
 
             param[layer_id][param_id] += eps * 2;
             this->set_parameters(param);
             this->forward(input);
             this->backprop(input, target);
-            const Scalar loss_post = this->loss(target);
+            const Scalar loss_post = m_output->loss();
 
             const Scalar deriv_est = (loss_post - loss_pre) / eps / 2;
 
