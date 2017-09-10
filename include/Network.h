@@ -351,8 +351,17 @@ public:
         this->set_parameters(param);
     }
 
-    // Fit a model
-    // Random seed will be set if seed > 0
+    ///
+    /// Fit the model based on the given data
+    ///
+    /// \param opt        An object that inherits from the Optimizer class, indicating the optimization algorithm to use.
+    /// \param x          The predictors. Each column is an observation.
+    /// \param y          The response variable. Each column is an observation.
+    /// \param batch_size Mini-batch size.
+    /// \param epoch      Number of epochs of training.
+    /// \param seed       Set the random seed of the %RNG if `seed > 0`, otherwise
+    ///                   use the current random state.
+    ///
     template <typename DerivedX, typename DerivedY>
     bool fit(Optimizer& opt, const Eigen::MatrixBase<DerivedX>& x, const Eigen::MatrixBase<DerivedY>& y,
              int batch_size, int epoch, int seed = -1)
@@ -405,7 +414,11 @@ public:
         return true;
     }
 
-    // Make predictions
+    ///
+    /// Use the fitted model to make predictions
+    ///
+    /// \param x The predictors. Each column is an observation.
+    ///
     Matrix predict(const Matrix& x)
     {
         const int nlayer = num_layers();

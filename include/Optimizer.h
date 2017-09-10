@@ -23,6 +23,9 @@ protected:
 public:
     virtual ~Optimizer() {}
 
+    ///
+    /// Reset the optimizer to clear all historical information
+    ///
     virtual void reset() {};
 
     ///
