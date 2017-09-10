@@ -8,6 +8,9 @@
 #include "../Layer.h"
 #include "../Utils/Random.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Layers
 ///
@@ -50,8 +53,8 @@ public:
         m_db.resize(this->m_out_size);
 
         // Set random coefficients
-        set_normal_random(m_weight.data(), m_weight.size(), rng, mu, sigma);
-        set_normal_random(m_bias.data(), m_bias.size(), rng, mu, sigma);
+        internal::set_normal_random(m_weight.data(), m_weight.size(), rng, mu, sigma);
+        internal::set_normal_random(m_bias.data(), m_bias.size(), rng, mu, sigma);
     }
 
     // prev_layer_data: in_size x nobs
@@ -143,6 +146,9 @@ public:
         return res;
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* LAYER_FULLYCONNECTED_H_ */

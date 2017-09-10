@@ -5,6 +5,9 @@
 #include <stdexcept>
 #include "Config.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \defgroup Outputs Output Layers
 ///
@@ -60,6 +63,9 @@ public:
     // intermediate result to save some computation
     virtual Scalar loss() const = 0;
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* OUTPUT_H_ */

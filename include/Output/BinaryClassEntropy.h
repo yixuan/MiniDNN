@@ -5,6 +5,9 @@
 #include <stdexcept>
 #include "../Config.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Outputs
 ///
@@ -90,6 +93,9 @@ public:
         return m_din.array().abs().log().sum() / m_din.cols();
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* OUTPUT_BINARYCLASSENTROPY_H_ */

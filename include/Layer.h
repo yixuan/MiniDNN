@@ -7,6 +7,9 @@
 #include "RNG.h"
 #include "Optimizer.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \defgroup Layers Hidden Layers
 ///
@@ -142,6 +145,9 @@ public:
     ///
     virtual std::vector<Scalar> get_derivatives() const = 0;
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* LAYER_H_ */

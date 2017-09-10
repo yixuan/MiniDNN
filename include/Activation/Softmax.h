@@ -1,6 +1,9 @@
 #ifndef ACTIVATION_SOFTMAX_H_
 #define ACTIVATION_SOFTMAX_H_
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Activations
 ///
@@ -33,6 +36,9 @@ public:
         G.array() = A.array() * (F.array().rowwise() - a_dot_f);
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* ACTIVATION_SOFTMAX_H_ */

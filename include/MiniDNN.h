@@ -5,7 +5,7 @@
 
 #include "Config.h"
 
-#include "Network.h"
+#include "RNG.h"
 
 #include "Layer.h"
 #include "Layer/FullyConnected.h"
@@ -29,6 +29,8 @@
 
 #include "Callback.h"
 #include "Callback/VerboseCallback.h"
+
+#include "Network.h"
 
 
 #endif /* MINIDNN_H_ */

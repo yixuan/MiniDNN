@@ -4,6 +4,9 @@
 #include <Eigen/Core>
 #include "../Config.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Activations
 ///
@@ -32,6 +35,9 @@ public:
         G.array() = A.array() * (Scalar(1) - A.array()) * F.array();
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* ACTIVATION_SIGMOID_H_ */

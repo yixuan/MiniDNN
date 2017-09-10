@@ -4,6 +4,11 @@
 #include <Eigen/Core>
 #include "../Config.h"
 
+namespace MiniDNN {
+
+namespace internal {
+
+
 // We assume the following memory layout:
 // There are 'n_obs' images, each with 'in_channels' channels
 // Each channel has 'channel_rows' rows and 'channel_cols' columns
@@ -345,6 +350,11 @@ inline void convolve_full(
         std::memcpy(dest, res_data + res_col_head + k * conv_rows, copy_bytes);
     }
 }
+
+
+} // namespace internal
+
+} // namespace MiniDNN
 
 
 #endif /* UTILS_CONVOLUTION_H_ */

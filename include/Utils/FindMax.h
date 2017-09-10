@@ -3,6 +3,11 @@
 
 #include "../Config.h"
 
+namespace MiniDNN {
+
+namespace internal {
+
+
 // Find the location of the maximum element in x[0], x[1], ..., x[n-1]
 // Special cases for small n using recursive template
 // N is assumed to be >= 2
@@ -91,6 +96,11 @@ inline Scalar find_block_max(const Scalar* x, const int nrow, const int ncol, co
 
     return val;
 }
+
+
+} // namespace internal
+
+} // namespace MiniDNN
 
 
 #endif /* UTILS_FINDMAX_H_ */

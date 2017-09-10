@@ -8,6 +8,9 @@
 #include "../Layer.h"
 #include "../Utils/FindMax.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Layers
 ///
@@ -93,7 +96,7 @@ public:
         for(; loc_data < loc_end; loc_data++, z_data++)
         {
             const int offset = *loc_data;
-            *z_data = find_block_max(src + offset, m_pool_rows, m_pool_cols, m_channel_rows, *loc_data);
+            *z_data = internal::find_block_max(src + offset, m_pool_rows, m_pool_cols, m_channel_rows, *loc_data);
             *loc_data += offset;
         }
 
@@ -141,6 +144,9 @@ public:
 
     std::vector<Scalar> get_derivatives() const { return std::vector<Scalar>(); }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* LAYER_MAXPOOLING_H_ */

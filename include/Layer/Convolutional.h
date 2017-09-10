@@ -9,6 +9,9 @@
 #include "../Utils/Convolution.h"
 #include "../Utils/Random.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Layers
 ///
@@ -26,21 +29,21 @@ private:
     typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
     typedef Vector::AlignedMapType AlignedMapVec;
 
-    const ConvDims m_dim;     // Various dimensions of convolution
+    const internal::ConvDims m_dim; // Various dimensions of convolution
 
-    Vector m_filter_data;     // Filter parameters. Total length is
-                              // (in_channels x out_channels x filter_rows x filter_cols)
-                              // See Utils/Convolution.h for its layout
+    Vector m_filter_data;           // Filter parameters. Total length is
+                                    // (in_channels x out_channels x filter_rows x filter_cols)
+                                    // See Utils/Convolution.h for its layout
 
-    Vector m_df_data;         // Derivative of filters, same dimension as m_filter_data
+    Vector m_df_data;               // Derivative of filters, same dimension as m_filter_data
 
-    Vector m_bias;            // Bias term for the output channels, out_channels x 1. (One bias term per channel)
-    Vector m_db;              // Derivative of bias, same dimension as m_bias
+    Vector m_bias;                  // Bias term for the output channels, out_channels x 1. (One bias term per channel)
+    Vector m_db;                    // Derivative of bias, same dimension as m_bias
 
-    Matrix m_z;               // Linear term, z = conv(in, w) + b. Each column is an observation
-    Matrix m_a;               // Output of this layer, a = act(z)
-    Matrix m_din;             // Derivative of the input of this layer
-                              // Note that input of this layer is also the output of previous layer
+    Matrix m_z;                     // Linear term, z = conv(in, w) + b. Each column is an observation
+    Matrix m_a;                     // Output of this layer, a = act(z)
+    Matrix m_din;                   // Derivative of the input of this layer
+                                    // Note that input of this layer is also the output of previous layer
 
 public:
     ///
@@ -69,12 +72,12 @@ public:
         m_df_data.resize(filter_data_size);
 
         // Random initialization of filter parameters
-        set_normal_random(m_filter_data.data(), filter_data_size, rng, mu, sigma);
+        internal::set_normal_random(m_filter_data.data(), filter_data_size, rng, mu, sigma);
 
         // Bias term
         m_bias.resize(m_dim.out_channels);
         m_db.resize(m_dim.out_channels);
-        set_normal_random(m_bias.data(), m_dim.out_channels, rng, mu, sigma);
+        internal::set_normal_random(m_bias.data(), m_dim.out_channels, rng, mu, sigma);
     }
 
     // http://cs231n.github.io/convolutional-networks/
@@ -86,7 +89,7 @@ public:
         // Linear term, z = conv(in, w) + b
         m_z.resize(this->m_out_size, nobs);
         // Convolution
-        convolve_valid(m_dim, prev_layer_data.data(), true, nobs,
+        internal::convolve_valid(m_dim, prev_layer_data.data(), true, nobs,
             m_filter_data.data(), m_z.data()
         );
         // Add bias terms
@@ -137,8 +140,9 @@ public:
         // d(L) / d(in_i) = sum_j((d(z_j) / d(in_i)) * (d(L) / d(z_j))) = sum_j(conv_full(d(L) / d(z_j), w_ij_rotate))
 
         // Derivative for weights
-        ConvDims back_conv_dim(nobs, m_dim.out_channels, m_dim.channel_rows, m_dim.channel_cols, m_dim.conv_rows, m_dim.conv_cols);
-        convolve_valid(back_conv_dim, prev_layer_data.data(), false, m_dim.in_channels,
+        internal::ConvDims back_conv_dim(nobs, m_dim.out_channels, m_dim.channel_rows, m_dim.channel_cols,
+                                         m_dim.conv_rows, m_dim.conv_cols);
+        internal::convolve_valid(back_conv_dim, prev_layer_data.data(), false, m_dim.in_channels,
             dLz.data(), m_df_data.data()
         );
         m_df_data /= nobs;
@@ -153,8 +157,8 @@ public:
 
         // Compute d(L) / d_in = conv_full(d(L) / d(z), w_rotate)
         m_din.resize(this->m_in_size, nobs);
-        ConvDims conv_full_dim(m_dim.out_channels, m_dim.in_channels, m_dim.conv_rows, m_dim.conv_cols, m_dim.filter_rows, m_dim.filter_cols);
-        convolve_full(conv_full_dim, dLz.data(), nobs,
+        internal::ConvDims conv_full_dim(m_dim.out_channels, m_dim.in_channels, m_dim.conv_rows, m_dim.conv_cols, m_dim.filter_rows, m_dim.filter_cols);
+        internal::convolve_full(conv_full_dim, dLz.data(), nobs,
             m_filter_data.data(), m_din.data()
         );
     }
@@ -204,6 +208,9 @@ public:
         return res;
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* LAYER_CONVOLUTIONAL_H_ */

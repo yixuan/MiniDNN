@@ -1,6 +1,9 @@
 #ifndef RNG_H_
 #define RNG_H_
 
+namespace MiniDNN {
+
+
 ///
 /// The interface and default implementation of the random number generator (%RNG).
 /// The %RNG is used to shuffle data and to initialize parameters of hidden layers.
@@ -54,6 +57,9 @@ public:
         return double(m_rand) / double(m_max);
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* RNG_H_ */

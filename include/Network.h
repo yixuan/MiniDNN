@@ -11,6 +11,9 @@
 #include "Callback.h"
 #include "Utils/Random.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \defgroup Network Neural Network Model
 ///
@@ -386,7 +389,7 @@ public:
 
         std::vector<XType> x_batches;
         std::vector<YType> y_batches;
-        const int nbatch = create_shuffled_batches(x, y, batch_size, m_rng, x_batches, y_batches);
+        const int nbatch = internal::create_shuffled_batches(x, y, batch_size, m_rng, x_batches, y_batches);
 
         // Set up callback parameters
         m_callback->m_nbatch = nbatch;
@@ -429,6 +432,9 @@ public:
         return m_layers[nlayer - 1]->output();
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* NETWORK_H_ */

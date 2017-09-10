@@ -4,6 +4,9 @@
 #include <Eigen/Core>
 #include "../Config.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \defgroup Activations Activation Functions
 ///
@@ -36,6 +39,9 @@ public:
         G.noalias() = F;
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* ACTIVATION_IDENTITY_H_ */

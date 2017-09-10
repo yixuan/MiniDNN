@@ -4,6 +4,9 @@
 #include <Eigen/Core>
 #include "../Config.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Activations
 ///
@@ -32,6 +35,9 @@ public:
         G.array() = (A.array() > Scalar(0)).select(F, Scalar(0));
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* ACTIVATION_RELU_H_ */

@@ -7,6 +7,9 @@
 #include "../Callback.h"
 #include "../Network.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Callbacks
 ///
@@ -27,6 +30,9 @@ public:
         std::cout << "[Epoch " << m_epoch_id << ", batch " << m_batch_id << "] Loss = " << loss << std::endl;
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* CALLBACK_VERBOSECALLBACK_H_ */

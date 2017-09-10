@@ -6,6 +6,9 @@
 #include "../Optimizer.h"
 #include "../Utils/sparsepp.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Optimizers
 ///
@@ -48,6 +51,9 @@ public:
         vec.array() -= m_lrate * dvec.array() / (grad_square + m_eps).sqrt();
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* OPTIMIZER_RMSPROP_H_ */

@@ -4,6 +4,9 @@
 #include <Eigen/Core>
 #include "Config.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \defgroup Optimizers Optimization Algorithms
 ///
@@ -41,6 +44,9 @@ public:
     ///
     virtual void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec) = 0;
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* OPTIMIZER_H_ */

@@ -4,6 +4,9 @@
 #include <Eigen/Core>
 #include "Config.h"
 
+namespace MiniDNN {
+
+
 class Network;
 
 ///
@@ -49,6 +52,9 @@ public:
     virtual void post_training_batch(const Network* net, const Matrix& x, const Matrix& y) {}
     virtual void post_training_batch(const Network* net, const Matrix& x, const IntegerVector& y) {}
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* CALLBACK_H_ */

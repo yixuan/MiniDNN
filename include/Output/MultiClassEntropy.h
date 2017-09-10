@@ -5,6 +5,9 @@
 #include <stdexcept>
 #include "../Config.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Outputs
 ///
@@ -115,6 +118,9 @@ public:
         return res / m_din.cols();
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* OUTPUT_MULTICLASSENTROPY_H_ */

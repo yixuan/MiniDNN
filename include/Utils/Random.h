@@ -5,6 +5,11 @@
 #include "../Config.h"
 #include "../RNG.h"
 
+namespace MiniDNN {
+
+namespace internal {
+
+
 // Shuffle the integer array
 inline void shuffle(int* arr, const int n, RNG& rng)
 {
@@ -85,6 +90,11 @@ inline void set_normal_random(Scalar* arr, const int n, RNG& rng,
         arr[n - 1] = t1 * std::cos(t2) + mu;
     }
 }
+
+
+} // namespace internal
+
+} // namespace MiniDNN
 
 
 #endif /* UTILS_RANDOM_H_ */

@@ -5,6 +5,9 @@
 #include "../Config.h"
 #include "../Optimizer.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Optimizers
 ///
@@ -30,6 +33,9 @@ public:
         vec.noalias() -= m_lrate * (dvec + m_decay * vec);
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* OPTIMIZER_SGD_H_ */

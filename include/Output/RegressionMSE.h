@@ -5,6 +5,9 @@
 #include <stdexcept>
 #include "../Config.h"
 
+namespace MiniDNN {
+
+
 ///
 /// \ingroup Outputs
 ///
@@ -47,6 +50,9 @@ public:
         return m_din.squaredNorm() / m_din.cols() * Scalar(0.5);
     }
 };
+
+
+} // namespace MiniDNN
 
 
 #endif /* OUTPUT_REGRESSIONMSE_H_ */
