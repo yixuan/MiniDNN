@@ -109,7 +109,7 @@ public:
         for(int i = 0; i < nelem; i++)
         {
             if(din_data[i] < Scalar(0))
-                res += std::log(din_data[i]);
+                res += std::log(-din_data[i]);
         }
 
         return res / m_din.cols();
