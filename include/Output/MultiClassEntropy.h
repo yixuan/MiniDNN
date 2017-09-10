@@ -97,7 +97,7 @@ public:
         return m_din;
     }
 
-    Scalar loss(const Matrix& prev_layer_data, const Matrix& target) const
+    Scalar loss() const
     {
         // L = -sum(log(phat) * y)
         // in = phat
