@@ -34,10 +34,10 @@ public:
                     continue;
                 }
                 if(target(j, i) != Scalar(0))
-                    throw std::invalid_argument("Target data should only contain zero or one");
+                    throw std::invalid_argument("[class MultiClassEntropy]: Target data should only contain zero or one");
             }
             if(one != 1)
-                throw std::invalid_argument("Each column of target data should only contain one \"1\"");
+                throw std::invalid_argument("[class MultiClassEntropy]: Each column of target data should only contain one \"1\"");
         }
     }
 
@@ -48,7 +48,7 @@ public:
         for(int i = 0; i < nobs; i++)
         {
             if(target[i] < 0)
-                throw std::invalid_argument("Target data must be non-negative");
+                throw std::invalid_argument("[class MultiClassEntropy]: Target data must be non-negative");
         }
     }
 
@@ -60,12 +60,12 @@ public:
         const int nobs = prev_layer_data.cols();
         const int nclass = prev_layer_data.rows();
         if((target.cols() != nobs) || (target.rows() != nclass))
-            throw std::invalid_argument("Target data have incorrect dimension");
+            throw std::invalid_argument("[class MultiClassEntropy]: Target data have incorrect dimension");
 
         // Compute the derivative of the input of this layer
         // L = -sum(log(phat) * y)
         // in = phat
-        // d_L / d_in = -y / phat
+        // d(L) / d(in) = -y / phat
         m_din.resize(nclass, nobs);
         m_din.noalias() = -target.cwiseQuotient(prev_layer_data);
     }
@@ -78,12 +78,12 @@ public:
         const int nobs = prev_layer_data.cols();
         const int nclass = prev_layer_data.rows();
         if(target.size() != nobs)
-            throw std::invalid_argument("Target data have incorrect dimension");
+            throw std::invalid_argument("[class MultiClassEntropy]: Target data have incorrect dimension");
 
         // Compute the derivative of the input of this layer
         // L = -log(phat[y])
         // in = phat
-        // d_L / d_in = [0, 0, ..., -1/phat[y], 0, ..., 0]
+        // d(L) / d(in) = [0, 0, ..., -1/phat[y], 0, ..., 0]
         m_din.resize(nclass, nobs);
         m_din.setZero();
         for(int i = 0; i < nobs; i++)
@@ -99,11 +99,9 @@ public:
 
     Scalar loss(const Matrix& prev_layer_data, const Matrix& target) const
     {
-        const int nobs = prev_layer_data.cols();
-
         // L = -sum(log(phat) * y)
         // in = phat
-        // d_L / d_in = -y / phat
+        // d(L) / d(in) = -y / phat
         // m_din contains 0 if y = 0, and -1/phat if y = 1
         Scalar res = Scalar(0);
         const int nelem = m_din.size();
@@ -114,20 +112,7 @@ public:
                 res += std::log(din_data[i]);
         }
 
-        return res / nobs;
-    }
-
-    Scalar loss(const Matrix& prev_layer_data, const IntegerVector& target) const
-    {
-        const int nobs = prev_layer_data.cols();
-
-        Scalar res = Scalar(0);
-        for(int i = 0; i < nobs; i++)
-        {
-            res += std::log(-m_din(target[i], i));
-        }
-
-        return res / nobs;
+        return res / m_din.cols();
     }
 };
 

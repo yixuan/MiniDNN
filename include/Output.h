@@ -2,6 +2,7 @@
 #define OUTPUT_H_
 
 #include <Eigen/Core>
+#include <stdexcept>
 #include "Config.h"
 
 ///
@@ -30,8 +31,12 @@ public:
     virtual void check_target_data(const Matrix& target) {}
 
     // Another type of target data where each element is a class label
-    // This version may not be sensible for regression tasks
-    virtual void check_target_data(const IntegerVector& target) {}
+    // This version may not be sensible for regression tasks, so by default
+    // we raise an exception
+    virtual void check_target_data(const IntegerVector& target)
+    {
+        throw std::invalid_argument("[class Output]: This output type cannot take class labels as target data");
+    }
 
     // A combination of the forward stage and the back-propagation stage for the output layer
     // The computed derivative of the input should be stored in this layer, and can be retrieved by
@@ -39,21 +44,21 @@ public:
     virtual void evaluate(const Matrix& prev_layer_data, const Matrix& target) = 0;
 
     // Another type of target data where each element is a class label
-    // This version may not be sensible for regression tasks
-    virtual void evaluate(const Matrix& prev_layer_data, const IntegerVector& target) = 0;
+    // This version may not be sensible for regression tasks, so by default
+    // we raise an exception
+    virtual void evaluate(const Matrix& prev_layer_data, const IntegerVector& target)
+    {
+        throw std::invalid_argument("[class Output]: This output type cannot take class labels as target data");
+    }
 
     // The derivative of the input of this layer, which is also the derivative
     // of the output of previous layer
     virtual const Matrix& backprop_data() const = 0;
 
-    // Compute the loss function value
+    // Return the loss function value after the evaluation
     // This function can be assumed to be called after evaluate(), so that it can make use of the
     // intermediate result to save some computation
-    virtual Scalar loss(const Matrix& prev_layer_data, const Matrix& target) const = 0;
-
-    // Another type of target data where each element is a class label
-    // This version may not be sensible for regression tasks
-    virtual Scalar loss(const Matrix& prev_layer_data, const IntegerVector& target) const = 0;
+    virtual Scalar loss() const = 0;
 };
 
 
