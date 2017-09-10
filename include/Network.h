@@ -358,7 +358,7 @@ public:
         // We do not directly use PlainObjectX since it may be row-majored if x is passed as mat.transpose()
         // We want to force XType and YType to be column-majored
         typedef typename Eigen::MatrixBase<DerivedX>::PlainObject PlainObjectX;
-        typedef typename Eigen::MatrixBase<DerivedX>::PlainObject PlainObjectY;
+        typedef typename Eigen::MatrixBase<DerivedY>::PlainObject PlainObjectY;
         typedef Eigen::Matrix<typename PlainObjectX::Scalar, PlainObjectX::RowsAtCompileTime, PlainObjectX::ColsAtCompileTime> XType;
         typedef Eigen::Matrix<typename PlainObjectY::Scalar, PlainObjectY::RowsAtCompileTime, PlainObjectY::ColsAtCompileTime> YType;
 
