@@ -205,7 +205,7 @@ public:
     }
 
     ///
-    /// Set the callback function during model fitting
+    /// Set the callback function that can be called during model fitting
     ///
     /// \param callback A user-provided callback function object that inherits
     ///                 from the default Callback class.
@@ -213,6 +213,13 @@ public:
     void set_callback(Callback& callback)
     {
         m_callback = &callback;
+    }
+    ///
+    /// Set the default silent callback function
+    ///
+    void set_default_callback()
+    {
+        m_callback = &m_default_callback;
     }
 
     ///
