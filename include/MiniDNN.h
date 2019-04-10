@@ -11,6 +11,7 @@
 #include "Layer/FullyConnected.h"
 #include "Layer/Convolutional.h"
 #include "Layer/MaxPooling.h"
+#include "EigenStream.h"
 
 #include "Activation/ReLU.h"
 #include "Activation/Identity.h"

@@ -5,7 +5,8 @@
 #include "../Config.h"
 #include "../Optimizer.h"
 
-namespace MiniDNN {
+namespace MiniDNN
+{
 
 
 ///
@@ -15,23 +16,23 @@ namespace MiniDNN {
 ///
 class SGD: public Optimizer
 {
-private:
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-    typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
-    typedef Vector::AlignedMapType AlignedMapVec;
+    private:
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+        typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
+        typedef Vector::AlignedMapType AlignedMapVec;
 
-public:
-    Scalar m_lrate;
-    Scalar m_decay;
+    public:
+        Scalar m_lrate;
+        Scalar m_decay;
 
-    SGD() :
-        m_lrate(Scalar(0.01)), m_decay(Scalar(0))
-    {}
+        SGD() :
+            m_lrate(Scalar(0.01)), m_decay(Scalar(0))
+        {}
 
-    void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec)
-    {
-        vec.noalias() -= m_lrate * (dvec + m_decay * vec);
-    }
+        void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec)
+        {
+            vec.noalias() -= m_lrate * (dvec + m_decay * vec);
+        }
 };
 
 
