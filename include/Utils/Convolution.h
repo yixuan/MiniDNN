@@ -4,9 +4,11 @@
 #include <Eigen/Core>
 #include "../Config.h"
 
-namespace MiniDNN {
+namespace MiniDNN
+{
 
-namespace internal {
+namespace internal
+{
 
 
 // We assume the following memory layout:
@@ -85,7 +87,8 @@ struct ConvDims
         channel_rows(channel_rows_), channel_cols(channel_cols_),
         filter_rows(filter_rows_), filter_cols(filter_cols_),
         img_rows(channel_rows_), img_cols(in_channels_ * channel_cols_),
-        conv_rows(channel_rows_ - filter_rows_ + 1), conv_cols(channel_cols_ - filter_cols_ + 1)
+        conv_rows(channel_rows_ - filter_rows_ + 1),
+        conv_cols(channel_cols_ - filter_cols_ + 1)
     {}
 };
 // Transform original matrix to "lower" form as described in the MEC paper
@@ -102,19 +105,23 @@ inline void flatten_mat(
     // Number of bytes in the segment that will be copied at one time
     const int& segment_size = dim.filter_rows;
     const std::size_t copy_bytes = sizeof(Scalar) * segment_size;
-
     Scalar* writer = flat_mat.data();
     const int channel_size = dim.channel_rows * dim.channel_cols;
-    for(int i = 0; i < n_obs; i++, src += stride)
+
+    for (int i = 0; i < n_obs; i++, src += stride)
     {
         const Scalar* reader_row = src;
         const Scalar* const reader_row_end = src + dim.conv_rows;
-        for(; reader_row < reader_row_end; reader_row++)
+
+        for (; reader_row < reader_row_end; reader_row++)
         {
             const Scalar* reader = reader_row;
             const Scalar* const reader_end = reader + channel_size;
-            for(; reader < reader_end; reader += dim.channel_rows, writer += segment_size)
+
+            for (; reader < reader_end; reader += dim.channel_rows, writer += segment_size)
+            {
                 std::memcpy(writer, reader, copy_bytes);
+            }
         }
     }
 }
@@ -122,8 +129,9 @@ inline void flatten_mat(
 // and progressively move the window to the right
 inline void moving_product(
     const int step,
-    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>& mat1,
-    Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& mat2,
+    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>&
+    mat1,
+    Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>>& mat2,
     Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& res
 )
 {
@@ -133,41 +141,46 @@ inline void moving_product(
     const int col2 = mat2.cols();
     const int col_end = col1 - row2;
     int res_start_col = 0;
-    for(int left_end = 0; left_end <= col_end; left_end += step, res_start_col += col2)
+
+    for (int left_end = 0; left_end <= col_end;
+            left_end += step, res_start_col += col2)
     {
-        res.block(0, res_start_col, row1, col2).noalias() += mat1.block(0, left_end, row1, row2) * mat2;
+        res.block(0, res_start_col, row1, col2).noalias() += mat1.block(0, left_end,
+                row1, row2) * mat2;
     }
 }
 // The main convolution function using the "valid" rule
 inline void convolve_valid(
     const ConvDims& dim,
-    const Scalar* src, const bool image_outer_loop, const int n_obs, const Scalar* filter_data,
+    const Scalar* src, const bool image_outer_loop, const int n_obs,
+    const Scalar* filter_data,
     Scalar* dest)
 {
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> RMatrix;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+    RMatrix;
     typedef Eigen::Map<const Matrix> ConstMapMat;
-
     // Flat matrix
     const int flat_rows = dim.conv_rows * n_obs;
     const int flat_cols = dim.filter_rows * dim.channel_cols;
     const int channel_size = dim.channel_rows * dim.channel_cols;
     // Distance between two images
-    const int img_stride = image_outer_loop ? (dim.img_rows * dim.img_cols) : channel_size;
+    const int img_stride = image_outer_loop ? (dim.img_rows * dim.img_cols) :
+                           channel_size;
     // Distance between two channels
-    const int channel_stride = image_outer_loop ? channel_size : (channel_size * n_obs);
+    const int channel_stride = image_outer_loop ? channel_size :
+                               (channel_size * n_obs);
     RMatrix flat_mat(flat_rows, flat_cols);
-
     // Convolution results
     const int& res_rows = flat_rows;
     const int res_cols = dim.conv_cols * dim.out_channels;
     Matrix res = Matrix::Zero(res_rows, res_cols);
-
     const int& step = dim.filter_rows;
     const int filter_size = dim.filter_rows * dim.filter_cols;
     const int filter_stride = filter_size * dim.out_channels;
 
-    for(int i = 0; i < dim.in_channels; i++, src += channel_stride, filter_data += filter_stride)
+    for (int i = 0; i < dim.in_channels;
+            i++, src += channel_stride, filter_data += filter_stride)
     {
         // Flatten source image
         flatten_mat(dim, src, img_stride, n_obs, flat_mat);
@@ -189,7 +202,6 @@ inline void convolve_valid(
      */
     // obs<k>_out<l> means the convolution result of the k-th image on the l-th output channel
     // [i, j] gives the matrix indices
-
     // The destination has the layout
     /*
      * obs0_out0[0, 0] obs0_out0[0, 1] obs0_out0[0, 2] obs0_out1[0, 0] obs0_out1[0, 1] obs0_out1[0, 2] ...
@@ -199,7 +211,6 @@ inline void convolve_valid(
      */
     // which in a larger scale looks like
     // [obs0_out0 obs0_out1 obs0_out2 obs1_out0 obs1_out1 obs1_out2 obs2_out0 ...]
-
     // Copy data to destination
     // dest[a, b] corresponds to obs<k>_out<l>[i, j]
     // where k = b / (conv_cols * out_channels),
@@ -213,7 +224,8 @@ inline void convolve_valid(
     const int dest_cols = res_cols * n_obs;
     const Scalar* res_data = res.data();
     const std::size_t copy_bytes = sizeof(Scalar) * dest_rows;
-    for(int b = 0; b < dest_cols; b++, dest += dest_rows)
+
+    for (int b = 0; b < dest_cols; b++, dest += dest_rows)
     {
         const int k = b / res_cols;
         const int l = (b % res_cols) / dim.conv_cols;
@@ -229,7 +241,8 @@ inline void convolve_valid(
 // The moving_product() function for the "full" rule
 inline void moving_product(
     const int padding, const int step,
-    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>& mat1,
+    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>&
+    mat1,
     const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& mat2,
     Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& res
 )
@@ -239,30 +252,39 @@ inline void moving_product(
     const int row2 = mat2.rows();
     const int col2 = mat2.cols();
     int res_start_col = 0;
-
     // Left padding
     int left_end = -padding;
     int right_end = step;
-    for(; left_end < 0 && right_end <= col1; left_end += step, right_end += step, res_start_col += col2)
+
+    for (; left_end < 0
+            && right_end <= col1;
+            left_end += step, right_end += step, res_start_col += col2)
     {
         res.block(0, res_start_col, row1, col2).noalias() += mat1.leftCols(right_end) *
-            mat2.bottomRows(right_end);
+                mat2.bottomRows(right_end);
     }
+
     // Main part
-    for(; right_end <= col1; left_end += step, right_end += step, res_start_col += col2)
+    for (; right_end <= col1;
+            left_end += step, right_end += step, res_start_col += col2)
     {
-        res.block(0, res_start_col, row1, col2).noalias() += mat1.block(0, left_end, row1, row2) * mat2;
+        res.block(0, res_start_col, row1, col2).noalias() += mat1.block(0, left_end,
+                row1, row2) * mat2;
     }
+
     // Right padding
-    for(; left_end < col1; left_end += step, res_start_col += col2)
+    for (; left_end < col1; left_end += step, res_start_col += col2)
     {
-        if(left_end <= 0)
+        if (left_end <= 0)
         {
-            res.block(0, res_start_col, row1, col2).noalias() += mat1 * mat2.block(0, -left_end, col1, row2);
-        } else {
+            res.block(0, res_start_col, row1, col2).noalias() += mat1 * mat2.block(0,
+                    -left_end, col1, row2);
+        }
+        else
+        {
             const int overlap = col1 - left_end;
             res.block(0, res_start_col, row1, col2).noalias() += mat1.rightCols(overlap) *
-                mat2.topRows(overlap);
+                    mat2.topRows(overlap);
         }
     }
 }
@@ -273,17 +295,15 @@ inline void convolve_full(
     Scalar* dest)
 {
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> RMatrix;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+    RMatrix;
     typedef Eigen::Map<const Matrix> ConstMapMat;
-
     // Padding sizes
     const int padding_top = dim.filter_rows - 1;
     const int padding_left = dim.filter_cols - 1;
-
     // Dimension of convolution result using "full" rule
     const int conv_rows = dim.channel_rows + padding_top;
     const int conv_cols = dim.channel_cols + padding_left;
-
     // Add (top and bottom) padding to source images
     const int pad_rows = dim.img_rows + padding_top * 2;
     const int pad_cols = dim.img_cols * n_obs;
@@ -293,15 +313,14 @@ inline void convolve_full(
     pad_mat.bottomRows(padding_top).setZero();
     pad_mat.block(padding_top, 0, dim.img_rows, pad_cols).noalias() = src_mat;
     src = pad_mat.data();
-    ConvDims pad_dim(dim.in_channels, dim.out_channels, pad_rows, dim.channel_cols, dim.filter_rows, dim.filter_cols);
-
+    ConvDims pad_dim(dim.in_channels, dim.out_channels, pad_rows, dim.channel_cols,
+                     dim.filter_rows, dim.filter_cols);
     // Flat matrix
     const int flat_rows = conv_rows * n_obs;
     const int flat_cols = dim.filter_rows * dim.channel_cols;
     const int img_stride = pad_rows * dim.img_cols;
     const int channel_stride = pad_rows * dim.channel_cols;
     RMatrix flat_mat(flat_rows, flat_cols);
-
     // The processing of filters are different from the "valid" rule in two ways:
     // 1. The layout of input channels and output channels are switched
     // 2. The filters need to be rotated, which is equivalent to reversing the vector of each filter
@@ -309,14 +328,18 @@ inline void convolve_full(
     std::vector<Matrix> filters_in(dim.in_channels);
     const int filter_size = dim.filter_rows * dim.filter_cols;
     const int nfilter = dim.in_channels * dim.out_channels;
-    for(int i = 0; i < dim.in_channels; i++)
+
+    for (int i = 0; i < dim.in_channels; i++)
     {
         filters_in[i].resize(filter_size, dim.out_channels);
     }
+
     const Scalar* reader = filter_data;
-    for(int i = 0; i < nfilter; i++, reader += filter_size)
+
+    for (int i = 0; i < nfilter; i++, reader += filter_size)
     {
-        Scalar* writer = filters_in[i % dim.in_channels].data() + (i / dim.in_channels) * filter_size;
+        Scalar* writer = filters_in[i % dim.in_channels].data() +
+                         (i / dim.in_channels) * filter_size;
         std::reverse_copy(reader, reader + filter_size, writer);
     }
 
@@ -324,10 +347,10 @@ inline void convolve_full(
     const int& res_rows = flat_rows;
     const int res_cols = conv_cols * dim.out_channels;
     Matrix res = Matrix::Zero(res_rows, res_cols);
-
     const int& step = dim.filter_rows;
     const int filter_padding = padding_left * dim.filter_rows;
-    for(int i = 0; i < dim.in_channels; i++, src += channel_stride)
+
+    for (int i = 0; i < dim.in_channels; i++, src += channel_stride)
     {
         // Flatten source image
         flatten_mat(pad_dim, src, img_stride, n_obs, flat_mat);
@@ -340,7 +363,8 @@ inline void convolve_full(
     const int  dest_cols = res_cols * n_obs;
     const Scalar* res_data = res.data();
     const std::size_t copy_bytes = sizeof(Scalar) * dest_rows;
-    for(int b = 0; b < dest_cols; b++, dest += dest_rows)
+
+    for (int b = 0; b < dest_cols; b++, dest += dest_rows)
     {
         const int k = b / res_cols;
         const int l = (b % res_cols) / conv_cols;

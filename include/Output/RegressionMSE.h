@@ -5,7 +5,8 @@
 #include <stdexcept>
 #include "../Config.h"
 
-namespace MiniDNN {
+namespace MiniDNN
+{
 
 
 ///
@@ -15,40 +16,43 @@ namespace MiniDNN {
 ///
 class RegressionMSE: public Output
 {
-private:
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+    private:
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
 
-    Matrix m_din;  // Derivative of the input of this layer.
-                   // Note that input of this layer is also the output of previous layer
+        Matrix m_din;  // Derivative of the input of this layer.
+        // Note that input of this layer is also the output of previous layer
 
-public:
-    void evaluate(const Matrix& prev_layer_data, const Matrix& target)
-    {
-        // Check dimension
-        const int nobs = prev_layer_data.cols();
-        const int nvar = prev_layer_data.rows();
-        if((target.cols() != nobs) || (target.rows() != nvar))
-            throw std::invalid_argument("[class RegressionMSE]: Target data have incorrect dimension");
+    public:
+        void evaluate(const Matrix& prev_layer_data, const Matrix& target)
+        {
+            // Check dimension
+            const int nobs = prev_layer_data.cols();
+            const int nvar = prev_layer_data.rows();
 
-        // Compute the derivative of the input of this layer
-        // L = 0.5 * ||yhat - y||^2
-        // in = yhat
-        // d(L) / d(in) = yhat - y
-        m_din.resize(nvar, nobs);
-        m_din.noalias() = prev_layer_data - target;
-    }
+            if ((target.cols() != nobs) || (target.rows() != nvar))
+            {
+                throw std::invalid_argument("[class RegressionMSE]: Target data have incorrect dimension");
+            }
 
-    const Matrix& backprop_data() const
-    {
-        return m_din;
-    }
+            // Compute the derivative of the input of this layer
+            // L = 0.5 * ||yhat - y||^2
+            // in = yhat
+            // d(L) / d(in) = yhat - y
+            m_din.resize(nvar, nobs);
+            m_din.noalias() = prev_layer_data - target;
+        }
 
-    Scalar loss() const
-    {
-        // L = 0.5 * ||yhat - y||^2
-        return m_din.squaredNorm() / m_din.cols() * Scalar(0.5);
-    }
+        const Matrix& backprop_data() const
+        {
+            return m_din;
+        }
+
+        Scalar loss() const
+        {
+            // L = 0.5 * ||yhat - y||^2
+            return m_din.squaredNorm() / m_din.cols() * Scalar(0.5);
+        }
 };
 
 
