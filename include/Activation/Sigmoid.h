@@ -36,6 +36,11 @@ class Sigmoid
         {
             G.array() = A.array() * (Scalar(1) - A.array()) * F.array();
         }
+
+        static std::string return_type()
+        {
+            return "Sigmoid";
+        }
 };
 
 

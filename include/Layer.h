@@ -73,6 +73,13 @@ class Layer
         virtual void init(const Scalar& mu, const Scalar& sigma, RNG& rng) = 0;
 
         ///
+        /// Initialize layer parameters using without distribution, used just when the layer is read from file
+        ///
+        virtual void init() = 0;
+
+
+
+        ///
         /// Compute the output of this layer
         ///
         /// The purpose of this function is to let the hidden layer compute information
@@ -152,6 +159,22 @@ class Layer
         /// Get serialized values of the gradient of parameters
         ///
         virtual std::vector<Scalar> get_derivatives() const = 0;
+
+        ///
+        /// @brief      Return the layer type, useful to export the NN model
+        ///
+        /// @return     Type of the layer
+        ///
+        virtual std::string layer_type() const = 0;
+
+        ///
+        /// @brief      Return the activation type, useful to export the NN model
+        ///
+        /// @return     Type of the activation type
+        ///
+        virtual std::string activation_type() const = 0;
+
+
 };
 
 

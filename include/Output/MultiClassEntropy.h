@@ -139,6 +139,11 @@ class MultiClassEntropy: public Output
 
             return res / m_din.cols();
         }
+
+        std::string output_type() const
+        {
+            return "MultiClassEntropy";
+        }
 };
 
 

@@ -37,6 +37,11 @@ class Softmax
             RowArray a_dot_f = A.cwiseProduct(F).colwise().sum();
             G.array() = A.array() * (F.array().rowwise() - a_dot_f);
         }
+
+        static std::string return_type()
+        {
+            return "Softmax";
+        }
 };
 
 

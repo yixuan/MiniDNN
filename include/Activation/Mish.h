@@ -1,5 +1,5 @@
-#ifndef ACTIVATION_RELU_H_
-#define ACTIVATION_RELU_H_
+#ifndef ACTIVATION_MISH_H_
+#define ACTIVATION_MISH_H_
 
 #include <Eigen/Core>
 #include "../Config.h"
@@ -11,9 +11,11 @@ namespace MiniDNN
 ///
 /// \ingroup Activations
 ///
-/// The ReLU activation function
+/// The Mish activation function
 ///
-class ReLU
+/// from : https://arxiv.org/abs/1908.08681
+///
+class Mish
 {
     private:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
@@ -23,7 +25,7 @@ class ReLU
         // Z = [z1, ..., zn], A = [a1, ..., an], n observations
         static inline void activate(const Matrix& Z, Matrix& A)
         {
-            A.array() = Z.array().cwiseMax(Scalar(0));
+            A.array() = Z.array() * ((((Z.array()).exp()).log1p()).tanh());
         }
 
         // Apply the Jacobian matrix J to a vector f
@@ -34,12 +36,19 @@ class ReLU
         static inline void apply_jacobian(const Matrix& Z, const Matrix& A,
                                           const Matrix& F, Matrix& G)
         {
-            G.array() = (A.array() > Scalar(0)).select(F, Scalar(0));
+            Matrix tempSoftplus;
+            Matrix tempSech;
+            Matrix ex;
+            ex.array() = Z.array().exp();
+            tempSoftplus.array() = ex.array().log1p();
+            tempSech.array() = Scalar(1) / (tempSoftplus.array().cosh());
+            G.array() = tempSoftplus.array().tanh() + Z.array() * ex.array() *
+                        tempSech.array() * (tempSech.array() / (Scalar(1) + ex.array())) * F.array();
         }
 
         static std::string return_type()
         {
-            return "ReLU";
+            return "Mish";
         }
 };
 
@@ -47,4 +56,4 @@ class ReLU
 } // namespace MiniDNN
 
 
-#endif /* ACTIVATION_RELU_H_ */
+#endif /* ACTIVATION_MISH_H_ */

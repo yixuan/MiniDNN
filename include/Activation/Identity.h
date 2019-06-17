@@ -40,6 +40,11 @@ class Identity
         {
             G.noalias() = F;
         }
+
+        static std::string return_type()
+        {
+            return "Identity";
+        }
 };
 
 

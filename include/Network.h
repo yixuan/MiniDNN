@@ -10,6 +10,7 @@
 #include "Output.h"
 #include "Callback.h"
 #include "Utils/Random.h"
+#include "Utils/MiniDNNStream.h"
 
 namespace MiniDNN
 {
@@ -42,6 +43,8 @@ class Network
         Callback*
         m_callback;         // Points to user-provided callback function,
         // otherwise points to m_default_callback
+        std::map<std::string, int> netMap;
+        std::vector< std::vector<Scalar> > params;
 
         // Check dimensions of layers
         void check_unit_sizes() const
@@ -483,6 +486,148 @@ class Network
 
             this->forward(x);
             return m_layers[nlayer - 1]->output();
+        }
+ 
+        ///
+        /// @brief      Export a net to file inside a certain folder with a certain file name
+        ///
+        /// @param[in]  folder    The folder where you want to save the net
+        /// @param[in]  fileName  The filename you want to use for the net
+        ///
+        void export_net(std::string folder, std::string fileName)
+        {
+            system(("mkdir " + folder).c_str());
+            fill_map();
+            write_map(folder + "/" + fileName, netMap);
+            write_parameters(folder, fileName, params);
+        }
+
+
+        ///
+        /// @brief      Reads a net from a specific folder with a specific name
+        ///
+        /// @param[in]  folder    The folder where the net is located
+        /// @param[in]  fileName  The file name of the net
+        ///
+        void read_net(std::string folder, std::string fileName)
+        {
+            netMap.clear();
+            read_map(folder + "/" + fileName, netMap);
+            int Nlayers = netMap.find("Nlayers")->second;
+            params = read_parameters(folder, fileName, Nlayers);
+            m_layers.clear();
+
+            for (int i = 0; i < Nlayers; i++)
+            {
+                add_layer(create_layer(i));
+            }
+
+            this->set_parameters(params);
+            set_output(create_output());
+        }
+
+        ///
+        /// @brief      Creates a layer from the netMap given the index of the layer
+        ///
+        /// @param[in]  index  The index of the layer
+        ///
+        /// @return     a pointer to the layer object
+        ///
+        Layer* create_layer(int index)
+        {
+            int layer_type = netMap.find("Layer" + to_string(index))->second;
+            int activation_type = netMap.find("Activation" + to_string(index))->second;
+            Layer* layer;
+
+            if (layer_type == 2)
+            {
+                int m_in_size = netMap.find("m_in_size" + to_string(index))->second;
+                int m_out_size = netMap.find("m_out_size" + to_string(index))->second;
+
+                if (activation_type == 0)
+                {
+                    layer = new FullyConnected<Identity>(m_in_size, m_out_size);
+                }
+
+                if (activation_type == 1)
+                {
+                    layer = new FullyConnected<ReLU>(m_in_size, m_out_size);
+                }
+
+                if (activation_type == 2)
+                {
+                    layer = new FullyConnected<Sigmoid>(m_in_size, m_out_size);
+                }
+
+                if (activation_type == 3)
+                {
+                    layer = new FullyConnected<Softmax>(m_in_size, m_out_size);
+                }
+
+                if (activation_type == 4)
+                {
+                    layer = new FullyConnected<Mish>(m_in_size, m_out_size);
+                }
+            }
+
+            layer->init();
+            return layer;
+        }
+
+        ///
+        /// @brief      Creates an output layer from the netMap
+        ///
+        /// @return     a pointer to the output layer
+        ///
+        Output* create_output()
+        {
+            Output* output;
+            int output_type = netMap.find("OutputLayer")->second;
+
+            if (output_type == 0)
+            {
+                output = new RegressionMSE();
+            }
+            else
+            {
+                std::cout << "This function is implemented only for RegressionMSE output layers" << std::endl;
+                exit(0);
+            }
+
+            return output;
+        }
+
+        ///
+        /// @brief      Fill the netMap object, useful to export the net
+        ///
+        /// @return     the netMap
+        ///
+        std::map<std::string, int> fill_map()
+        {
+            netMap.clear();
+            M_Assert(num_layers() > 0, "The net has zero layers");
+            netMap.insert(std::pair<std::string, int>("Nlayers", num_layers()));
+            params = get_parameters();
+
+            for (int i = 0; i < num_layers(); i++)
+            {
+                netMap.insert(std::pair<std::string, int>("Layer" + to_string(i),
+                              layer_type(m_layers[i]->layer_type())));
+                netMap.insert(std::pair<std::string, int>("Activation" + to_string(
+                                  i), activation_type(m_layers[i]->activation_type())));
+                netMap.insert(std::pair<std::string, int>("m_in_size" + to_string(
+                                  i), m_layers[i]->in_size()));
+                netMap.insert(std::pair<std::string, int>("m_out_size" + to_string(
+                                  i), m_layers[i]->out_size()));
+            }
+
+            netMap.insert(std::pair<std::string, int>("OutputLayer",
+                          output_type(m_output->output_type())));
+            return netMap;
+        }
+        std::map<std::string, int> getNetMap()
+        {
+            return netMap;
         }
 };
 

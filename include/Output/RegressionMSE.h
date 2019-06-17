@@ -53,6 +53,11 @@ class RegressionMSE: public Output
             // L = 0.5 * ||yhat - y||^2
             return m_din.squaredNorm() / m_din.cols() * Scalar(0.5);
         }
+
+        std::string output_type() const
+        {
+            return "RegressionMSE";
+        }
 };
 
 
