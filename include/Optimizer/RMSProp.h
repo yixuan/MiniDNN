@@ -4,7 +4,7 @@
 #include <Eigen/Core>
 #include "../Config.h"
 #include "../Optimizer.h"
-#include "../Utils/sparsepp.h"
+#include "../external/sparsepp/spp.h"
 
 namespace MiniDNN
 {
