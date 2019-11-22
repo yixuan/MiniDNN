@@ -27,6 +27,7 @@
 #include "Optimizer/SGD.h"
 #include "Optimizer/AdaGrad.h"
 #include "Optimizer/RMSProp.h"
+#include "Optimizer/Adam.h"
 
 #include "Callback.h"
 #include "Callback/VerboseCallback.h"
