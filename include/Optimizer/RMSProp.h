@@ -28,10 +28,11 @@ class RMSProp: public Optimizer
     public:
         Scalar m_lrate;
         Scalar m_eps;
-        Scalar m_decay;
+        Scalar m_gamma;
 
-        RMSProp() :
-            m_lrate(Scalar(0.001)), m_eps(Scalar(1e-6)), m_decay(Scalar(0.9))
+        RMSProp(const Scalar& lrate = Scalar(0.001), const Scalar& eps = Scalar(1e-6),
+                const Scalar& gamma = Scalar(0.9)) :
+            m_lrate(lrate), m_eps(eps), m_gamma(gamma)
         {}
 
         void reset()
@@ -52,7 +53,7 @@ class RMSProp: public Optimizer
             }
 
             // Update accumulated squared gradient
-            grad_square = m_decay * grad_square + (Scalar(1) - m_decay) *
+            grad_square = m_gamma * grad_square + (Scalar(1) - m_gamma) *
                           dvec.array().square();
             // Update parameters
             vec.array() -= m_lrate * dvec.array() / (grad_square + m_eps).sqrt();

@@ -29,8 +29,8 @@ class AdaGrad: public Optimizer
         Scalar m_lrate;
         Scalar m_eps;
 
-        AdaGrad() :
-            m_lrate(Scalar(0.01)), m_eps(Scalar(1e-7))
+        AdaGrad(const Scalar& lrate = Scalar(0.001), const Scalar& eps = Scalar(1e-6)) :
+            m_lrate(lrate), m_eps(eps)
         {}
 
         void reset()

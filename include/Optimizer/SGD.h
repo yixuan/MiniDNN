@@ -25,8 +25,8 @@ class SGD: public Optimizer
         Scalar m_lrate;
         Scalar m_decay;
 
-        SGD() :
-            m_lrate(Scalar(0.01)), m_decay(Scalar(0))
+        SGD(const Scalar& lrate = Scalar(0.001), const Scalar& decay = Scalar(0)) :
+            m_lrate(lrate), m_decay(decay)
         {}
 
         void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec)
