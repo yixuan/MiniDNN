@@ -4,20 +4,21 @@
 
 required_command="astyle"
 code_directory="include/"
+code_exclude="include/external"
 tutorial_directory="tutorials/"
 
 #######################################
 
 usage() {
-	echo
+    echo
     echo -e "\tUsage: $(basename $0) [files]"
-	echo
+    echo
     echo -e "\tIf files are not specified, $(basename $0) formats all ".C" and ".H" files"
-	echo -e "\tin source directory; otherwise, it formats all given files."
-	echo
-	echo -e "\tRequired command: $required_command"
-	echo
-	exit 0
+    echo -e "\tin source directory; otherwise, it formats all given files."
+    echo
+    echo -e "\tRequired command: $required_command"
+    echo
+    exit 0
 }
 
 
@@ -25,14 +26,14 @@ usage() {
 
 # Test for required program
 for comm in $required_command; do
-	command -v $comm >/dev/null 2>&1 || {
-		echo "I require $comm but it's not installed. Aborting." >&2;
-		exit 1
-	}
+    command -v $comm >/dev/null 2>&1 || {
+        echo "I require $comm but it's not installed. Aborting." >&2;
+        exit 1
+    }
 done
 
 # Set the files to format
-[[ $# != 0 ]] && src_files=$@ || src_files="--recursive $code_directory**.h,**.H"
+[[ $# != 0 ]] && src_files=$@ || src_files="--recursive $code_directory**.h,**.H --exclude=$code_exclude"
 [[ $# != 0 ]] && tutorial_files=$@ || tutorial_files="--recursive $tutorial_directory**.cpp,**.H"
 
 echo $tutorial_files
