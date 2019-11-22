@@ -54,7 +54,6 @@ astyle --style=bsd\
        --align-reference=type\
        --add-braces\
        --convert-tabs\
-       --close-templates\
        --max-code-length=80\
        --mode=c\
        $src_files
@@ -74,7 +73,6 @@ astyle --style=bsd\
        --align-reference=type\
        --add-braces\
        --convert-tabs\
-       --close-templates\
        --max-code-length=80\
        --mode=c\
        $tutorial_files
