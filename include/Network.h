@@ -293,10 +293,10 @@ class Network
         ///
         /// Get the serialized layer parameters
         ///
-        std::vector< std::vector<Scalar>> get_parameters() const
+        std::vector< std::vector<Scalar> > get_parameters() const
         {
             const int nlayer = num_layers();
-            std::vector< std::vector<Scalar>> res;
+            std::vector< std::vector<Scalar> > res;
             res.reserve(nlayer);
 
             for (int i = 0; i < nlayer; i++)
@@ -312,7 +312,7 @@ class Network
         ///
         /// \param param Serialized layer parameters
         ///
-        void set_parameters(const std::vector< std::vector<Scalar>>& param)
+        void set_parameters(const std::vector< std::vector<Scalar> >& param)
         {
             const int nlayer = num_layers();
 
@@ -330,10 +330,10 @@ class Network
         ///
         /// Get the serialized derivatives of layer parameters
         ///
-        std::vector< std::vector<Scalar>> get_derivatives() const
+        std::vector< std::vector<Scalar> > get_derivatives() const
         {
             const int nlayer = num_layers();
-            std::vector< std::vector<Scalar>> res;
+            std::vector< std::vector<Scalar> > res;
             res.reserve(nlayer);
 
             for (int i = 0; i < nlayer; i++)
@@ -358,8 +358,8 @@ class Network
 
             this->forward(input);
             this->backprop(input, target);
-            std::vector< std::vector<Scalar>> param = this->get_parameters();
-            std::vector< std::vector<Scalar>> deriv = this->get_derivatives();
+            std::vector< std::vector<Scalar> > param = this->get_parameters();
+            std::vector< std::vector<Scalar> > deriv = this->get_derivatives();
             const Scalar eps = 1e-5;
             const int nlayer = deriv.size();
 

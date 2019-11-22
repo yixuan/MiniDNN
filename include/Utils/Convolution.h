@@ -131,7 +131,7 @@ inline void moving_product(
     const int step,
     const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>&
     mat1,
-    Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>>& mat2,
+    Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& mat2,
     Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& res
 )
 {
