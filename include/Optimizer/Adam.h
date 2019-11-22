@@ -53,7 +53,6 @@ class Adam: public Optimizer
         void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec)
         {
             using std::sqrt;
-
             // Get the m and v vectors associated with this gradient
             Array& mvec = m_history_m[dvec.data()];
             Array& vvec = m_history_v[dvec.data()];
@@ -64,6 +63,7 @@ class Adam: public Optimizer
                 mvec.resize(dvec.size());
                 mvec.setZero();
             }
+
             if (vvec.size() == 0)
             {
                 vvec.resize(dvec.size());
@@ -73,14 +73,11 @@ class Adam: public Optimizer
             // Update m and v vectors
             mvec = m_beta1 * mvec + (Scalar(1) - m_beta1) * dvec.array();
             vvec = m_beta2 * vvec + (Scalar(1) - m_beta2) * dvec.array().square();
-
             // Correction coefficients
             const Scalar correct1 = Scalar(1) / (Scalar(1) - m_beta1t);
             const Scalar correct2 = Scalar(1) / sqrt(Scalar(1) - m_beta2t);
-
             // Update parameters
             vec.array() -= (m_lrate * correct1) * mvec / (correct2 * vvec.sqrt() + m_eps);
-
             m_beta1t *= m_beta1;
             m_beta2t *= m_beta2;
         }
