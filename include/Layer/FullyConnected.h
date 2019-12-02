@@ -3,6 +3,7 @@
 
 #include <Eigen/Core>
 #include <vector>
+#include <iostream>
 #include <stdexcept>
 #include "../Config.h"
 #include "../Layer.h"
@@ -55,6 +56,14 @@ class FullyConnected: public Layer
             // Set random coefficients
             internal::set_normal_random(m_weight.data(), m_weight.size(), rng, mu, sigma);
             internal::set_normal_random(m_bias.data(), m_bias.size(), rng, mu, sigma);
+        }
+
+        void init()
+        {
+            m_weight.resize(this->m_in_size, this->m_out_size);
+            m_bias.resize(this->m_out_size);
+            m_dw.resize(this->m_in_size, this->m_out_size);
+            m_db.resize(this->m_out_size);
         }
 
         // prev_layer_data: in_size x nobs
@@ -139,6 +148,16 @@ class FullyConnected: public Layer
             std::copy(m_dw.data(), m_dw.data() + m_dw.size(), res.begin());
             std::copy(m_db.data(), m_db.data() + m_db.size(), res.begin() + m_dw.size());
             return res;
+        }
+
+        std::string layer_type() const
+        {
+            return "FullyConnected";
+        }
+
+        std::string activation_type() const
+        {
+            return Activation::return_type();
         }
 };
 

@@ -110,6 +110,12 @@ class BinaryClassEntropy: public Output
             // L = log(abs(m_din)).sum()
             return m_din.array().abs().log().sum() / m_din.cols();
         }
+
+
+        std::string output_type() const
+        {
+            return "BinaryClassEntropy";
+        }
 };
 
 

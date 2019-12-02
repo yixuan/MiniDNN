@@ -64,6 +64,13 @@ class Output
         // This function can be assumed to be called after evaluate(), so that it can make use of the
         // intermediate result to save some computation
         virtual Scalar loss() const = 0;
+
+        ///
+        /// @brief      Return the layer type, useful to export the NN model
+        ///
+        /// @return     Type of the layer
+        ///
+        virtual std::string output_type() const = 0;
 };
 
 

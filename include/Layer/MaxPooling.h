@@ -65,6 +65,10 @@ class MaxPooling: public Layer
 
         void init(const Scalar& mu, const Scalar& sigma, RNG& rng) {}
 
+        void init() {}
+
+
+
         void forward(const Matrix& prev_layer_data)
         {
             // Each column is an observation
@@ -165,6 +169,16 @@ class MaxPooling: public Layer
         std::vector<Scalar> get_derivatives() const
         {
             return std::vector<Scalar>();
+        }
+
+        std::string layer_type() const
+        {
+            return "MaxPooling";
+        }
+
+        std::string activation_type() const
+        {
+            return Activation::return_type();
         }
 };
 

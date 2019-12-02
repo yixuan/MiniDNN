@@ -82,6 +82,12 @@ class Convolutional: public Layer
             internal::set_normal_random(m_bias.data(), m_dim.out_channels, rng, mu, sigma);
         }
 
+        void init()
+        {
+            M_assert(1 = 2,
+                     "At the moment the readNet method is implemented only for fully connected layers!!");
+        }
+
         // http://cs231n.github.io/convolutional-networks/
         void forward(const Matrix& prev_layer_data)
         {
@@ -211,6 +217,17 @@ class Convolutional: public Layer
                       res.begin() + m_df_data.size());
             return res;
         }
+
+        std::string layer_type() const
+        {
+            return "Convolutional";
+        }
+
+        std::string activation_type() const
+        {
+            return Activation::return_type();
+        }
+
 };
 
 
