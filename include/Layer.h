@@ -6,6 +6,7 @@
 #include "Config.h"
 #include "RNG.h"
 #include "Optimizer.h"
+#include <map>
 
 namespace MiniDNN
 {
@@ -174,6 +175,13 @@ class Layer
         ///
         virtual std::string activation_type() const = 0;
 
+        ///
+        /// @brief      Fill a map used to export informations to file
+        ///
+        /// @param[in,out]     map_dim  The map, which contains informations of the net
+        /// @param[in]         index    The index, which defines the number of the layer
+        ///
+        virtual void fill_map (std::map<std::string, int>& map_dim, int index) = 0;
 
 };
 

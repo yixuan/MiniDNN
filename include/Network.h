@@ -487,7 +487,7 @@ class Network
             this->forward(x);
             return m_layers[nlayer - 1]->output();
         }
- 
+
         ///
         /// @brief      Export a net to file inside a certain folder with a certain file name
         ///
@@ -539,6 +539,87 @@ class Network
             int activation_type = netMap.find("Activation" + to_string(index))->second;
             Layer* layer;
 
+            if (layer_type == 0)
+            {
+                int in_width = netMap.find("in_width" + to_string(index))->second;
+                int in_height = netMap.find("in_height" + to_string(index))->second;
+                int in_channels = netMap.find("in_channels" + to_string(index))->second;
+                int out_channels = netMap.find("out_channels" + to_string(index))->second;
+                int window_width = netMap.find("window_width" + to_string(index))->second;
+                int window_height = netMap.find("window_height" + to_string(index))->second;
+
+                if (activation_type == 0)
+                {
+                    layer = new Convolutional<Identity>(in_width, in_height, in_channels,
+                                                        out_channels, window_width, window_height);
+                }
+
+                if (activation_type == 1)
+                {
+                    layer = new Convolutional<ReLU>(in_width, in_height, in_channels,
+                                                    out_channels, window_width, window_height);
+                }
+
+                if (activation_type == 2)
+                {
+                    layer = new Convolutional<Sigmoid>(in_width, in_height, in_channels,
+                                                       out_channels, window_width, window_height);
+                }
+
+                if (activation_type == 3)
+                {
+                    layer = new Convolutional<Softmax>(in_width, in_height, in_channels,
+                                                       out_channels, window_width, window_height);
+                }
+
+                if (activation_type == 4)
+                {
+                    layer = new Convolutional<Mish>(in_width, in_height, in_channels,
+                                                    out_channels, window_width, window_height);
+                }
+            }
+
+            if (layer_type == 1)
+            {
+                const int in_width = netMap.find("in_width" + to_string(index))->second;
+                const int in_height = netMap.find("in_height" + to_string(index))->second;
+                const int in_channels = netMap.find("in_channels" + to_string(index))->second;
+                const int pooling_width = netMap.find("pooling_width" + to_string(
+                        index))->second;
+                const int pooling_height = netMap.find("pooling_height" + to_string(
+                        index))->second;
+
+                if (activation_type == 0)
+                {
+                    layer = new MaxPooling<Identity>(in_width, in_height, in_channels,
+                                                     pooling_width, pooling_height);
+                }
+
+                if (activation_type == 1)
+                {
+                    layer = new MaxPooling<ReLU>(in_width, in_height, in_channels,
+                                                 pooling_width, pooling_height);
+                }
+
+                if (activation_type == 2)
+                {
+                    layer = new MaxPooling<Sigmoid>(in_width, in_height, in_channels,
+                                                    pooling_width, pooling_height);
+                }
+
+                if (activation_type == 3)
+                {
+                    layer = new MaxPooling<Softmax>(in_width, in_height, in_channels,
+                                                    pooling_width, pooling_height);
+                }
+
+                if (activation_type == 4)
+                {
+                    layer = new MaxPooling<Mish>(in_width, in_height, in_channels,
+                                                 pooling_width, pooling_height);
+                }
+            }
+
             if (layer_type == 2)
             {
                 int m_in_size = netMap.find("m_in_size" + to_string(index))->second;
@@ -588,9 +669,11 @@ class Network
             {
                 output = new RegressionMSE();
             }
+
             else
             {
-                std::cout << "This function is implemented only for RegressionMSE output layers" << std::endl;
+                std::cout << "This function is implemented only for RegressionMSE output layers"
+                          << std::endl;
                 exit(0);
             }
 
@@ -611,21 +694,14 @@ class Network
 
             for (int i = 0; i < num_layers(); i++)
             {
-                netMap.insert(std::pair<std::string, int>("Layer" + to_string(i),
-                              layer_type(m_layers[i]->layer_type())));
-                netMap.insert(std::pair<std::string, int>("Activation" + to_string(
-                                  i), activation_type(m_layers[i]->activation_type())));
-                netMap.insert(std::pair<std::string, int>("m_in_size" + to_string(
-                                  i), m_layers[i]->in_size()));
-                netMap.insert(std::pair<std::string, int>("m_out_size" + to_string(
-                                  i), m_layers[i]->out_size()));
+                m_layers[i]->fill_map(netMap, i);
             }
 
             netMap.insert(std::pair<std::string, int>("OutputLayer",
                           output_type(m_output->output_type())));
             return netMap;
         }
-        std::map<std::string, int> getNetMap()
+        std::map<std::string, int> get_net_map()
         {
             return netMap;
         }

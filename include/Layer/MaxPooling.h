@@ -35,6 +35,12 @@ class MaxPooling: public Layer
         const int m_out_rows;
         const int m_out_cols;
 
+        const int in_width;
+        const int in_height;
+        const int in_channels;
+        const int pooling_width;
+        const int pooling_height;
+
         IntMatrix m_loc;             // Record the locations of maximums
         Matrix m_z;                  // Max pooling results
         Matrix m_a;                  // Output of this layer, a = act(z)
@@ -53,12 +59,17 @@ class MaxPooling: public Layer
         /// \param pooling_width  Width of the pooling window.
         /// \param pooling_height Height of the pooling window.
         ///
-        MaxPooling(const int in_width, const int in_height, const int in_channels,
-                   const int pooling_width, const int pooling_height) :
-            Layer(in_width * in_height * in_channels,
-                  (in_width / pooling_width) * (in_height / pooling_height) * in_channels),
-            m_channel_rows(in_height), m_channel_cols(in_width), m_in_channels(in_channels),
-            m_pool_rows(pooling_height), m_pool_cols(pooling_width),
+        MaxPooling(const int in_width_, const int in_height_, const int in_channels_,
+                   const int pooling_width_, const int pooling_height_) :
+            in_width(in_width_),
+            in_height(in_height_),
+            in_channels(in_channels_),
+            pooling_width(pooling_width_),
+            pooling_height(pooling_height_),
+            Layer(in_width_ * in_height_ * in_channels_,
+                  (in_width_ / pooling_width_) * (in_height_ / pooling_height_) * in_channels_),
+            m_channel_rows(in_height_), m_channel_cols(in_width_), m_in_channels(in_channels_),
+            m_pool_rows(pooling_height_), m_pool_cols(pooling_width_),
             m_out_rows(m_channel_rows / m_pool_rows),
             m_out_cols(m_channel_cols / m_pool_cols)
         {}
@@ -179,6 +190,24 @@ class MaxPooling: public Layer
         std::string activation_type() const
         {
             return Activation::return_type();
+        }
+
+        void fill_map (std::map<std::string, int>& netMap, int index)
+        {
+            netMap.insert(std::pair<std::string, int>("Layer" + to_string(index),
+                          MiniDNN::layer_type(layer_type())));
+            netMap.insert(std::pair<std::string, int>("Activation" + to_string(
+                              index), MiniDNN::activation_type(activation_type())));
+            netMap.insert(std::pair<std::string, int>("in_width" + to_string(
+                              index), in_width));
+            netMap.insert(std::pair<std::string, int>("in_height" + to_string(
+                              index), in_height));
+            netMap.insert(std::pair<std::string, int>("in_channels" + to_string(
+                              index), in_channels));
+            netMap.insert(std::pair<std::string, int>("pooling_width" + to_string(
+                              index), pooling_width));
+            netMap.insert(std::pair<std::string, int>("pooling_height" + to_string(
+                              index), pooling_height));
         }
 };
 

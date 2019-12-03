@@ -8,6 +8,7 @@
 #include "../Config.h"
 #include "../Layer.h"
 #include "../Utils/Random.h"
+#include "../Utils/MiniDNNStream.h"
 
 namespace MiniDNN
 {
@@ -158,6 +159,18 @@ class FullyConnected: public Layer
         std::string activation_type() const
         {
             return Activation::return_type();
+        }
+
+        void fill_map (std::map<std::string, int>& netMap, int index)
+        {
+            netMap.insert(std::pair<std::string, int>("Layer" + to_string(index),
+                          MiniDNN::layer_type(layer_type())));
+            netMap.insert(std::pair<std::string, int>("Activation" + to_string(
+                              index), MiniDNN::activation_type(activation_type())));
+            netMap.insert(std::pair<std::string, int>("m_in_size" + to_string(
+                              index), in_size()));
+            netMap.insert(std::pair<std::string, int>("m_out_size" + to_string(
+                              index), out_size()));
         }
 };
 

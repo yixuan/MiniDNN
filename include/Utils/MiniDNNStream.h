@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <algorithm>
 #include <fstream>
+#include <iterator>
 #include "Assert.h"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
