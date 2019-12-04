@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <algorithm>
 #include <fstream>
+#include <iterator>
 #include "Assert.h"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
@@ -53,7 +54,7 @@ std::string to_string(numberType num)
 /// @param[in] folder string to identify the folder where you want to save the file.
 ///
 void export_matrix(Eigen::MatrixXd& matrix, std::string Name,
-                  std::string type = "python", std::string folder = "./Model")
+                   std::string type = "python", std::string folder = "./Model")
 {
     mkdir(folder.c_str(), ACCESSPERMS);
     std::string est;
@@ -73,7 +74,6 @@ void export_matrix(Eigen::MatrixXd& matrix, std::string Name,
                 {
                     str << "[" << matrix(i, j);
                 }
-
                 else
                 {
                     str << "," << matrix(i, j);
@@ -133,7 +133,7 @@ void export_matrix(Eigen::MatrixXd& matrix, std::string Name,
 ///
 template <typename MatrixType>
 void save_dense_matrix(MatrixType& Matrix, std::string folder,
-                     std::string MatrixName)
+                       std::string MatrixName)
 {
     mkdir(folder.c_str(), ACCESSPERMS);
     std::ofstream out(folder + MatrixName,
@@ -157,7 +157,7 @@ void save_dense_matrix(MatrixType& Matrix, std::string folder,
 ///
 template <typename MatrixType>
 void read_dense_matrix(MatrixType& Matrix, std::string folder,
-                     std::string MatrixName)
+                       std::string MatrixName)
 {
     std::ifstream in;
     in.open((folder + MatrixName).c_str(), std::ios::in | std::ios::binary);
@@ -188,7 +188,7 @@ void read_dense_matrix(MatrixType& Matrix, std::string folder,
 ///
 template <typename TensorType>
 void save_dense_tensor(TensorType& Tensor, std::string folder,
-                     std::string MatrixName)
+                       std::string MatrixName)
 {
     std::ofstream out(folder + MatrixName,
                       std::ios::out | std::ios::binary | std::ios::trunc);
@@ -218,7 +218,7 @@ void save_dense_tensor(TensorType& Tensor, std::string folder,
 ///
 template <typename TensorType>
 void read_dense_tensor(TensorType& Tensor, std::string folder,
-                     std::string MatrixName)
+                       std::string MatrixName)
 {
     std::ifstream in;
     in.open((folder + MatrixName).c_str(), std::ios::in | std::ios::binary);
@@ -396,7 +396,7 @@ int activation_type(std::string type)
 int output_type(std::string type)
 {
     M_Assert(type == "RegressionMSE" || type == "MultiClassEntropy" ||
-             type == "BinaryClassEntropy" , "output is not of a known type");
+             type == "BinaryClassEntropy", "output is not of a known type");
     int out;
 
     if (type == "RegressionMSE")

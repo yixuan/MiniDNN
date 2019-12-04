@@ -3,6 +3,8 @@
 
 #include <Eigen/Core>
 #include "../Config.h"
+#include <map>
+
 
 namespace MiniDNN
 {

@@ -9,6 +9,7 @@
 #include "../Utils/Convolution.h"
 #include "../Utils/Random.h"
 
+
 namespace MiniDNN
 {
 
@@ -31,6 +32,7 @@ class Convolutional: public Layer
         typedef Vector::AlignedMapType AlignedMapVec;
 
         const internal::ConvDims m_dim; // Various dimensions of convolution
+
 
         Vector m_filter_data;           // Filter parameters. Total length is
         // (in_channels x out_channels x filter_rows x filter_cols)
@@ -84,8 +86,13 @@ class Convolutional: public Layer
 
         void init()
         {
-            M_assert(1 = 2,
-                     "At the moment the readNet method is implemented only for fully connected layers!!");
+            const int filter_data_size = m_dim.in_channels * m_dim.out_channels *
+                                         m_dim.filter_rows * m_dim.filter_cols;
+            m_filter_data.resize(filter_data_size);
+            m_df_data.resize(filter_data_size);
+            // Bias term
+            m_bias.resize(m_dim.out_channels);
+            m_db.resize(m_dim.out_channels);
         }
 
         // http://cs231n.github.io/convolutional-networks/
@@ -226,6 +233,26 @@ class Convolutional: public Layer
         std::string activation_type() const
         {
             return Activation::return_type();
+        }
+
+        void fill_map (std::map<std::string, int>& netMap, int index)
+        {
+            netMap.insert(std::pair<std::string, int>("Layer" + to_string(index),
+                          MiniDNN::layer_type(layer_type())));
+            netMap.insert(std::pair<std::string, int>("Activation" + to_string(
+                              index), MiniDNN::activation_type(activation_type())));
+            netMap.insert(std::pair<std::string, int>("in_channels" + to_string(
+                              index), m_dim.in_channels));
+            netMap.insert(std::pair<std::string, int>("out_channels" + to_string(
+                              index), m_dim.out_channels));
+            netMap.insert(std::pair<std::string, int>("in_height" + to_string(
+                              index), m_dim.channel_rows));
+            netMap.insert(std::pair<std::string, int>("in_width" + to_string(
+                              index), m_dim.channel_cols));
+            netMap.insert(std::pair<std::string, int>("window_width" + to_string(
+                              index), m_dim.filter_cols));
+            netMap.insert(std::pair<std::string, int>("window_height" + to_string(
+                              index), m_dim.filter_rows));
         }
 
 };
