@@ -33,6 +33,7 @@ class Convolutional: public Layer
 
         const internal::ConvDims m_dim; // Various dimensions of convolution
 
+
         Vector m_filter_data;           // Filter parameters. Total length is
         // (in_channels x out_channels x filter_rows x filter_cols)
         // See Utils/Convolution.h for its layout
@@ -244,14 +245,14 @@ class Convolutional: public Layer
                               index), m_dim.in_channels));
             netMap.insert(std::pair<std::string, int>("out_channels" + to_string(
                               index), m_dim.out_channels));
-            netMap.insert(std::pair<std::string, int>("channel_rows" + to_string(
+            netMap.insert(std::pair<std::string, int>("in_height" + to_string(
                               index), m_dim.channel_rows));
-            netMap.insert(std::pair<std::string, int>("channel_cols" + to_string(
+            netMap.insert(std::pair<std::string, int>("in_width" + to_string(
                               index), m_dim.channel_cols));
-            netMap.insert(std::pair<std::string, int>("filter_rows" + to_string(
-                              index), m_dim.filter_rows));
-            netMap.insert(std::pair<std::string, int>("filter_cols" + to_string(
+            netMap.insert(std::pair<std::string, int>("window_width" + to_string(
                               index), m_dim.filter_cols));
+            netMap.insert(std::pair<std::string, int>("window_height" + to_string(
+                              index), m_dim.filter_rows));
         }
 
 };

@@ -68,7 +68,8 @@ class MaxPooling: public Layer
             pooling_height(pooling_height_),
             Layer(in_width_ * in_height_ * in_channels_,
                   (in_width_ / pooling_width_) * (in_height_ / pooling_height_) * in_channels_),
-            m_channel_rows(in_height_), m_channel_cols(in_width_), m_in_channels(in_channels_),
+            m_channel_rows(in_height_), m_channel_cols(in_width_),
+            m_in_channels(in_channels_),
             m_pool_rows(pooling_height_), m_pool_cols(pooling_width_),
             m_out_rows(m_channel_rows / m_pool_rows),
             m_out_cols(m_channel_cols / m_pool_cols)

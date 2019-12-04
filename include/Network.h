@@ -670,11 +670,14 @@ class Network
                 output = new RegressionMSE();
             }
 
-            else
+            if (output_type == 1)
             {
-                std::cout << "This function is implemented only for RegressionMSE output layers"
-                          << std::endl;
-                exit(0);
+                output = new MultiClassEntropy();
+            }
+
+            if (output_type == 2)
+            {
+                output = new BinaryClassEntropy();
             }
 
             return output;
