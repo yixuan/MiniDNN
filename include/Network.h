@@ -44,7 +44,7 @@ class Network
         m_callback;         // Points to user-provided callback function,
         // otherwise points to m_default_callback
         std::map<std::string, int> netMap;
-        std::vector< std::vector<Scalar> > params;
+        std::vector<std::vector<Scalar>> params;
 
         // Check dimensions of layers
         void check_unit_sizes() const
@@ -296,10 +296,10 @@ class Network
         ///
         /// Get the serialized layer parameters
         ///
-        std::vector< std::vector<Scalar> > get_parameters() const
+        std::vector<std::vector<Scalar>> get_parameters() const
         {
             const int nlayer = num_layers();
-            std::vector< std::vector<Scalar> > res;
+            std::vector<std::vector<Scalar>> res;
             res.reserve(nlayer);
 
             for (int i = 0; i < nlayer; i++)
@@ -315,7 +315,7 @@ class Network
         ///
         /// \param param Serialized layer parameters
         ///
-        void set_parameters(const std::vector< std::vector<Scalar> >& param)
+        void set_parameters(const std::vector<std::vector<Scalar>>& param)
         {
             const int nlayer = num_layers();
 
@@ -333,10 +333,10 @@ class Network
         ///
         /// Get the serialized derivatives of layer parameters
         ///
-        std::vector< std::vector<Scalar> > get_derivatives() const
+        std::vector<std::vector<Scalar>> get_derivatives() const
         {
             const int nlayer = num_layers();
-            std::vector< std::vector<Scalar> > res;
+            std::vector<std::vector<Scalar>> res;
             res.reserve(nlayer);
 
             for (int i = 0; i < nlayer; i++)
@@ -361,8 +361,8 @@ class Network
 
             this->forward(input);
             this->backprop(input, target);
-            std::vector< std::vector<Scalar> > param = this->get_parameters();
-            std::vector< std::vector<Scalar> > deriv = this->get_derivatives();
+            std::vector<std::vector<Scalar>> param = this->get_parameters();
+            std::vector<std::vector<Scalar>> deriv = this->get_derivatives();
             const Scalar eps = 1e-5;
             const int nlayer = deriv.size();
 
@@ -577,6 +577,12 @@ class Network
                     layer = new Convolutional<Mish>(in_width, in_height, in_channels,
                                                     out_channels, window_width, window_height);
                 }
+
+                if (activation_type == 5)
+                {
+                    layer = new Convolutional<Tanh>(in_width, in_height, in_channels,
+                                                    out_channels, window_width, window_height);
+                }
             }
 
             if (layer_type == 1)
@@ -618,6 +624,12 @@ class Network
                     layer = new MaxPooling<Mish>(in_width, in_height, in_channels,
                                                  pooling_width, pooling_height);
                 }
+
+                if (activation_type == 5)
+                {
+                    layer = new MaxPooling<Tanh>(in_width, in_height, in_channels,
+                                                 pooling_width, pooling_height);
+                }
             }
 
             if (layer_type == 2)
@@ -648,6 +660,11 @@ class Network
                 if (activation_type == 4)
                 {
                     layer = new FullyConnected<Mish>(m_in_size, m_out_size);
+                }
+
+                if (activation_type == 5)
+                {
+                    layer = new FullyConnected<Tanh>(m_in_size, m_out_size);
                 }
             }
 
