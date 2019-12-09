@@ -39,7 +39,7 @@ int main()
     // Layer 1 -- FullyConnected, input size 2x200
     Layer* layer1 = new FullyConnected<Identity>(2, 200);
     // Layer 2 -- max FullyConnected, input size 200x200
-    Layer* layer2 = new FullyConnected<Mish>(200, 200);
+    Layer* layer2 = new FullyConnected<ReLU>(200, 200);
     // Layer 4 -- fully connected, input size 200x1
     Layer* layer3 = new FullyConnected<Identity>(200, 1);
     // Add layers to the network object
@@ -50,14 +50,14 @@ int main()
     net.set_output(new RegressionMSE());
     // Create optimizer object
     Adam opt;
-    opt.m_lrate = 0.001;
+    opt.m_lrate = 0.01;
     // (Optional) set callback function object
     VerboseCallback callback;
     net.set_callback(callback);
     // Initialize parameters with N(0, 0.01^2) using random seed 123
-    net.init(0, 0.1, 000);
+    net.init(0, 0.01, 000);
     // Fit the model with a batch size of 100, running 10 epochs with random seed 123
-    net.fit(opt, x, y, 500, 5000, 000);
+    net.fit(opt, x, y, 1000, 1000, 000);
     // Obtain prediction -- each column is an observation
     Matrix pred = net.predict(xt);
     // Export the network to the NetFolder folder with prefix NetFile
@@ -67,7 +67,7 @@ int main()
     // Read structure and paramaters from file
     netFromFile.read_net("./NetFolder/", "NetFile");
     // Test that they give the same prediction
-    std::cout << net.predict(xt) - netFromFile.predict(xt) << std::endl;
+    std::cout << (yt - netFromFile.predict(xt)).norm()/yt.norm() << std::endl;
     // Layer objects will be freed by the network object,
     // so do not manually delete them
     return 0;

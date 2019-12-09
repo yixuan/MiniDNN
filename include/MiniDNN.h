@@ -17,6 +17,7 @@
 #include "Activation/Identity.h"
 #include "Activation/Sigmoid.h"
 #include "Activation/Softmax.h"
+#include "Activation/Tanh.h"
 
 #include "Output.h"
 #include "Output/RegressionMSE.h"

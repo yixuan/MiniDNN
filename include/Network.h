@@ -577,6 +577,12 @@ class Network
                     layer = new Convolutional<Mish>(in_width, in_height, in_channels,
                                                     out_channels, window_width, window_height);
                 }
+
+                if (activation_type == 5)
+                {
+                    layer = new Convolutional<Tanh>(in_width, in_height, in_channels,
+                                                    out_channels, window_width, window_height);
+                }
             }
 
             if (layer_type == 1)
@@ -618,6 +624,12 @@ class Network
                     layer = new MaxPooling<Mish>(in_width, in_height, in_channels,
                                                  pooling_width, pooling_height);
                 }
+
+                if (activation_type == 5)
+                {
+                    layer = new MaxPooling<Tanh>(in_width, in_height, in_channels,
+                                                 pooling_width, pooling_height);
+                }
             }
 
             if (layer_type == 2)
@@ -648,6 +660,11 @@ class Network
                 if (activation_type == 4)
                 {
                     layer = new FullyConnected<Mish>(m_in_size, m_out_size);
+                }
+
+                if (activation_type == 5)
+                {
+                    layer = new FullyConnected<Tanh>(m_in_size, m_out_size);
                 }
             }
 

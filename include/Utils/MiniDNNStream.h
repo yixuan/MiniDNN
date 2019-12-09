@@ -356,7 +356,7 @@ int activation_type(std::string type)
 {
     M_Assert(type == "Identity" || type == "ReLU" ||
              type == "Sigmoid" || type == "Softmax" ||
-             type == "Mish", "Activation is not of a known type");
+             type == "Mish" || type == "Tanh", "Activation is not of a known type");
     int out;
 
     if (type == "Identity")
@@ -382,6 +382,11 @@ int activation_type(std::string type)
     if (type == "Mish")
     {
         out = 4;
+    }
+
+    if (type == "Tanh")
+    {
+        out = 5;
     }
 
     return out;
