@@ -13,7 +13,7 @@ namespace MiniDNN
 ///
 /// The Mish activation function
 ///
-/// from : https://arxiv.org/abs/1908.08681
+/// From: https://arxiv.org/abs/1908.08681
 ///
 class Mish
 {
@@ -21,11 +21,23 @@ class Mish
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
 
     public:
-        // a = activation(z) = max(z, 0)
+        // Mish(x) = x * tanh(softplus(x))
+        // softplus(x) = log(1 + exp(x))
+        // a = activation(z) = Mish(z)
         // Z = [z1, ..., zn], A = [a1, ..., an], n observations
         static inline void activate(const Matrix& Z, Matrix& A)
         {
-            A.array() = Z.array() * ((((Z.array()).exp()).log1p()).tanh());
+            // h(x) = tanh(softplus(x)) = (1 + exp(x))^2 - 1
+            //                            ------------------
+            //                            (1 + exp(x))^2 + 1
+            // Let s = exp(-abs(x)), t = 1 + s
+            // If x >= 0, then h(x) = (t^2 - s^2) / (t^2 + s^2)
+            // If x <= 0, then h(x) = (t^2 - 1) / (t^2 + 1)
+            Matrix S = (-Z.array().abs()).exp();
+            A.array() = (S.array() + Scalar(1)).square();  // t^2
+            S.noalias() = (Z.array() >= Scalar(0)).select(S.cwiseAbs2(), Scalar(1));  // s^2 or 1
+            A.array() = (A.array() - S.array()) / (A.array() + S.array());
+            A.array() *= Z.array();
         }
 
         // Apply the Jacobian matrix J to a vector f
