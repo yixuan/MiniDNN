@@ -41,21 +41,23 @@ class Mish
         }
 
         // Apply the Jacobian matrix J to a vector f
-        // J = d_a / d_z = diag(sign(a)) = diag(a > 0)
-        // g = J * f = (a > 0) .* f
+        // J = d_a / d_z = diag(Mish'(z))
+        // g = J * f = Mish'(z) .* f
         // Z = [z1, ..., zn], G = [g1, ..., gn], F = [f1, ..., fn]
         // Note: When entering this function, Z and G may point to the same matrix
         static inline void apply_jacobian(const Matrix& Z, const Matrix& A,
                                           const Matrix& F, Matrix& G)
         {
-            Matrix tempSoftplus;
-            Matrix tempSech;
-            Matrix ex;
-            ex.array() = Z.array().exp();
-            tempSoftplus.array() = ex.array().log1p();
-            tempSech.array() = Scalar(1) / (tempSoftplus.array().cosh());
-            G.array() = tempSoftplus.array().tanh() + Z.array() * ex.array() *
-                        tempSech.array() * (tempSech.array() / (Scalar(1) + ex.array())) * F.array();
+            // Let h(x) = tanh(softplus(x))
+            // Mish'(x) = h(x) + x * h'(x)
+            // h'(x) = tanh'(softplus(x)) * softplus'(x)
+            //       = [1 - h(x)^2] * exp(x) / (1 + exp(x))
+            //       = [1 - h(x)^2] / (1 + exp(-x))
+            // Mish'(x) = h(x) + [x - Mish(x) * h(x)] / (1 + exp(-x))
+            // A = Mish(Z) = Z .* h(Z) => h(Z) = A ./ Z, h(0) = 0.6
+            G.noalias() = (Z.array() == Scalar(0)).select(Scalar(0.6), A.cwiseQuotient(Z));
+            G.array() += (Z.array() - A.array() * G.array()) / (Scalar(1) + (-Z).array().exp());
+            G.array() *= F.array();
         }
 
         static std::string return_type()
