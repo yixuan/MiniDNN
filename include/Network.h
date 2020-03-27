@@ -310,7 +310,7 @@ class Network
         }
 
         // Get the meta information of the network, used to export the NN model
-        MetaInfo get_meta_info()
+        MetaInfo get_meta_info() const
         {
             const int nlayer = num_layers();
             MetaInfo map;
@@ -672,13 +672,13 @@ class Network
         /// \param folder   The folder where the network is saved.
         /// \param fileName The filename for the network.
         ///
-        void export_net(std::string folder, std::string fileName)
+        void export_net(const std::string& folder, const std::string& filename) const
         {
-            system(("mkdir " + folder).c_str());
+            internal::create_directory(folder);
             MetaInfo map = this->get_meta_info();
-            write_map(folder + "/" + fileName, map);
+            write_map(folder + "/" + filename, map);
             std::vector< std::vector<Scalar> > params = this->get_parameters();
-            write_parameters(folder, fileName, params);
+            write_parameters(folder, filename, params);
         }
 
         ///
@@ -687,12 +687,12 @@ class Network
         /// \param folder   The folder where the network is saved.
         /// \param fileName The filename for the network.
         ///
-        void read_net(std::string folder, std::string fileName)
+        void read_net(const std::string& folder, const std::string& filename)
         {
             MetaInfo map;
-            read_map(folder + "/" + fileName, map);
+            read_map(folder + "/" + filename, map);
             int Nlayers = map.find("Nlayers")->second;
-            std::vector< std::vector<Scalar> > params = read_parameters(folder, fileName, Nlayers);
+            std::vector< std::vector<Scalar> > params = read_parameters(folder, filename, Nlayers);
             m_layers.clear();
 
             for (int i = 0; i < Nlayers; i++)

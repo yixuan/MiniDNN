@@ -3,6 +3,13 @@
 
 #include <string>   // std::string
 #include <sstream>  // std::ostringstream
+
+#ifdef _WIN32
+	#include <windows.h>  // _mkdir
+#else
+	#include <sys/stat.h> // mkdir
+#endif
+
 #include "../Config.h"
 
 namespace MiniDNN
@@ -25,6 +32,21 @@ std::string to_string(const NumberType& num)
     std::ostringstream convert;
     convert << num;
     return convert.str();
+}
+
+///
+/// Create a directory
+///
+/// \param dir     Name of the directory to be created
+/// \return        \c true if the directory is successfully created
+///
+bool create_directory(const std::string& dir)
+{
+#ifdef _WIN32
+	return 0 == _mkdir(dir.c_str());
+#else
+	return 0 == mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+#endif
 }
 
 
