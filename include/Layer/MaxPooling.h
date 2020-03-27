@@ -25,6 +25,7 @@ class MaxPooling: public Layer
     private:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::MatrixXi IntMatrix;
+        typedef std::map<std::string, int> MetaInfo;
 
         const int m_channel_rows;
         const int m_channel_cols;
@@ -78,8 +79,6 @@ class MaxPooling: public Layer
         void init(const Scalar& mu, const Scalar& sigma, RNG& rng) {}
 
         void init() {}
-
-
 
         void forward(const Matrix& prev_layer_data)
         {
@@ -193,22 +192,16 @@ class MaxPooling: public Layer
             return Activation::return_type();
         }
 
-        void fill_map (std::map<std::string, int>& netMap, int index)
+        void fill_meta_info(MetaInfo& map, int index) const
         {
-            netMap.insert(std::pair<std::string, int>("Layer" + to_string(index),
-                          MiniDNN::layer_type(layer_type())));
-            netMap.insert(std::pair<std::string, int>("Activation" + to_string(
-                              index), MiniDNN::activation_type(activation_type())));
-            netMap.insert(std::pair<std::string, int>("in_width" + to_string(
-                              index), in_width));
-            netMap.insert(std::pair<std::string, int>("in_height" + to_string(
-                              index), in_height));
-            netMap.insert(std::pair<std::string, int>("in_channels" + to_string(
-                              index), in_channels));
-            netMap.insert(std::pair<std::string, int>("pooling_width" + to_string(
-                              index), pooling_width));
-            netMap.insert(std::pair<std::string, int>("pooling_height" + to_string(
-                              index), pooling_height));
+            std::string ind = to_string(index);
+            map.insert(std::make_pair("Layer" + ind, MiniDNN::layer_type(layer_type())));
+            map.insert(std::make_pair("Activation" + ind, MiniDNN::activation_type(activation_type())));
+            map.insert(std::make_pair("in_width" + ind, in_width));
+            map.insert(std::make_pair("in_height" + ind, in_height));
+            map.insert(std::make_pair("in_channels" + ind, in_channels));
+            map.insert(std::make_pair("pooling_width" + ind, pooling_width));
+            map.insert(std::make_pair("pooling_height" + ind, pooling_height));
         }
 };
 

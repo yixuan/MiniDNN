@@ -27,6 +27,7 @@ class FullyConnected: public Layer
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
         typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
         typedef Vector::AlignedMapType AlignedMapVec;
+        typedef std::map<std::string, int> MetaInfo;
 
         Matrix m_weight;  // Weight parameters, W(in_size x out_size)
         Vector m_bias;    // Bias parameters, b(out_size x 1)
@@ -161,16 +162,13 @@ class FullyConnected: public Layer
             return Activation::return_type();
         }
 
-        void fill_map (std::map<std::string, int>& netMap, int index)
+        void fill_meta_info(MetaInfo& map, int index) const
         {
-            netMap.insert(std::pair<std::string, int>("Layer" + to_string(index),
-                          MiniDNN::layer_type(layer_type())));
-            netMap.insert(std::pair<std::string, int>("Activation" + to_string(
-                              index), MiniDNN::activation_type(activation_type())));
-            netMap.insert(std::pair<std::string, int>("m_in_size" + to_string(
-                              index), in_size()));
-            netMap.insert(std::pair<std::string, int>("m_out_size" + to_string(
-                              index), out_size()));
+            std::string ind = to_string(index);
+            map.insert(std::make_pair("Layer" + ind, MiniDNN::layer_type(layer_type())));
+            map.insert(std::make_pair("Activation" + ind, MiniDNN::activation_type(activation_type())));
+            map.insert(std::make_pair("m_in_size" + ind, in_size()));
+            map.insert(std::make_pair("m_out_size" + ind, out_size()));
         }
 };
 

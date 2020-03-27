@@ -30,6 +30,7 @@ class Convolutional: public Layer
         typedef Matrix::ConstAlignedMapType ConstAlignedMapMat;
         typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
         typedef Vector::AlignedMapType AlignedMapVec;
+        typedef std::map<std::string, int> MetaInfo;
 
         const internal::ConvDims m_dim; // Various dimensions of convolution
 
@@ -235,26 +236,18 @@ class Convolutional: public Layer
             return Activation::return_type();
         }
 
-        void fill_map (std::map<std::string, int>& netMap, int index)
+        void fill_meta_info(MetaInfo& map, int index) const
         {
-            netMap.insert(std::pair<std::string, int>("Layer" + to_string(index),
-                          MiniDNN::layer_type(layer_type())));
-            netMap.insert(std::pair<std::string, int>("Activation" + to_string(
-                              index), MiniDNN::activation_type(activation_type())));
-            netMap.insert(std::pair<std::string, int>("in_channels" + to_string(
-                              index), m_dim.in_channels));
-            netMap.insert(std::pair<std::string, int>("out_channels" + to_string(
-                              index), m_dim.out_channels));
-            netMap.insert(std::pair<std::string, int>("in_height" + to_string(
-                              index), m_dim.channel_rows));
-            netMap.insert(std::pair<std::string, int>("in_width" + to_string(
-                              index), m_dim.channel_cols));
-            netMap.insert(std::pair<std::string, int>("window_width" + to_string(
-                              index), m_dim.filter_cols));
-            netMap.insert(std::pair<std::string, int>("window_height" + to_string(
-                              index), m_dim.filter_rows));
+            std::string ind = to_string(index);
+            map.insert(std::make_pair("Layer" + ind, MiniDNN::layer_type(layer_type())));
+            map.insert(std::make_pair("Activation" + ind, MiniDNN::activation_type(activation_type())));
+            map.insert(std::make_pair("in_channels" + ind, m_dim.in_channels));
+            map.insert(std::make_pair("out_channels" + ind, m_dim.out_channels));
+            map.insert(std::make_pair("in_height" + ind, m_dim.channel_rows));
+            map.insert(std::make_pair("in_width" + ind, m_dim.channel_cols));
+            map.insert(std::make_pair("window_width" + ind, m_dim.filter_cols));
+            map.insert(std::make_pair("window_height" + ind, m_dim.filter_rows));
         }
-
 };
 
 

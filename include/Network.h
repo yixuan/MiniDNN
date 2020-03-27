@@ -497,7 +497,7 @@ class Network
         void export_net(std::string folder, std::string fileName)
         {
             system(("mkdir " + folder).c_str());
-            fill_map();
+            fill_meta_info();
             write_map(folder + "/" + fileName, netMap);
             write_parameters(folder, fileName, params);
         }
@@ -705,7 +705,7 @@ class Network
         ///
         /// @return     the netMap
         ///
-        std::map<std::string, int> fill_map()
+        std::map<std::string, int> fill_meta_info()
         {
             netMap.clear();
             M_Assert(num_layers() > 0, "The net has zero layers");
@@ -714,7 +714,7 @@ class Network
 
             for (int i = 0; i < num_layers(); i++)
             {
-                m_layers[i]->fill_map(netMap, i);
+                m_layers[i]->fill_meta_info(netMap, i);
             }
 
             netMap.insert(std::pair<std::string, int>("OutputLayer",

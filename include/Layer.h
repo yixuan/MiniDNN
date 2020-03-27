@@ -3,10 +3,10 @@
 
 #include <Eigen/Core>
 #include <vector>
+#include <map>
 #include "Config.h"
 #include "RNG.h"
 #include "Optimizer.h"
-#include <map>
 
 namespace MiniDNN
 {
@@ -28,6 +28,7 @@ class Layer
     protected:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+        typedef std::map<std::string, int> MetaInfo;
 
         const int m_in_size;  // Size of input units
         const int m_out_size; // Size of output units
@@ -176,13 +177,15 @@ class Layer
         virtual std::string activation_type() const = 0;
 
         ///
-        /// @brief      Fill a map used to export informations to file
+        /// Fill in the meta information of this layer, such as layer type, input
+        /// and output sizes, etc. It is used to export layer to file.
         ///
-        /// @param[in,out]     map_dim  The map, which contains informations of the net
-        /// @param[in]         index    The index, which defines the number of the layer
+        /// \param map   A key-value map that contains the meta information of the NN model.
+        /// \param index The index of this layer in the NN model. It is used to generate
+        ///              the key. For example, the layer may insert {"Layer1": 2},
+        ///              where 1 is the index, "Layer1" is the key, and 2 is the value.
         ///
-        virtual void fill_map (std::map<std::string, int>& map_dim, int index) = 0;
-
+        virtual void fill_meta_info(MetaInfo& map, int index) const = 0;
 };
 
 
