@@ -4,7 +4,6 @@
 #include <Eigen/Core>
 #include "../Config.h"
 #include "../Optimizer.h"
-#include "../external/sparsepp/spp.h"
 
 namespace MiniDNN
 {
@@ -23,7 +22,7 @@ class RMSProp: public Optimizer
         typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
         typedef Vector::AlignedMapType AlignedMapVec;
 
-        spp::sparse_hash_map<const Scalar*, Array> m_history;
+        std::map<const Scalar*, Array> m_history;
 
     public:
         Scalar m_lrate;

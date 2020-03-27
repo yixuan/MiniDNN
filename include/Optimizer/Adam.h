@@ -2,9 +2,9 @@
 #define OPTIMIZER_ADAM_H_
 
 #include <Eigen/Core>
+#include <map>
 #include "../Config.h"
 #include "../Optimizer.h"
-#include "../external/sparsepp/spp.h"
 
 namespace MiniDNN
 {
@@ -23,8 +23,8 @@ class Adam: public Optimizer
         typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
         typedef Vector::AlignedMapType AlignedMapVec;
 
-        spp::sparse_hash_map<const Scalar*, Array> m_history_m;
-        spp::sparse_hash_map<const Scalar*, Array> m_history_v;
+        std::map<const Scalar*, Array> m_history_m;
+        std::map<const Scalar*, Array> m_history_v;
         Scalar m_beta1t;
         Scalar m_beta2t;
 
