@@ -3,13 +3,12 @@
 
 #include <Eigen/Core>
 #include <vector>
-#include <iostream>
 #include <stdexcept>
 #include "../Config.h"
 #include "../Layer.h"
 #include "../Utils/Random.h"
 #include "../Utils/IO.h"
-#include "../Utils/MiniDNNStream.h"
+#include "../Utils/Enum.h"
 
 namespace MiniDNN
 {
@@ -165,8 +164,8 @@ class FullyConnected: public Layer
         void fill_meta_info(MetaInfo& map, int index) const
         {
             std::string ind = internal::to_string(index);
-            map.insert(std::make_pair("Layer" + ind, MiniDNN::layer_type(layer_type())));
-            map.insert(std::make_pair("Activation" + ind, MiniDNN::activation_type(activation_type())));
+            map.insert(std::make_pair("Layer" + ind, internal::layer_id(layer_type())));
+            map.insert(std::make_pair("Activation" + ind, internal::activation_id(activation_type())));
             map.insert(std::make_pair("m_in_size" + ind, in_size()));
             map.insert(std::make_pair("m_out_size" + ind, out_size()));
         }

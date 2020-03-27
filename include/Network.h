@@ -205,10 +205,8 @@ class Network
                 const int in_width = map.find("in_width" + ind)->second;
                 const int in_height = map.find("in_height" + ind)->second;
                 const int in_channels = map.find("in_channels" + ind)->second;
-                const int pooling_width = map.find("pooling_width" + to_string(
-                        index))->second;
-                const int pooling_height = map.find("pooling_height" + to_string(
-                        index))->second;
+                const int pooling_width = map.find("pooling_width" + ind)->second;
+                const int pooling_height = map.find("pooling_height" + ind)->second;
 
                 if (activation_type == 0)
                 {
@@ -323,7 +321,7 @@ class Network
                 m_layers[i]->fill_meta_info(map, i);
             }
 
-            map.insert(std::make_pair("OutputLayer", output_type(m_output->output_type())));
+            map.insert(std::make_pair("OutputLayer", internal::output_id(m_output->output_type())));
             return map;
         }
 
@@ -682,7 +680,6 @@ class Network
             std::vector< std::vector<Scalar> > params = this->get_parameters();
             write_parameters(folder, fileName, params);
         }
-
 
         ///
         /// Read in a network from files.

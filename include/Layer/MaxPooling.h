@@ -8,6 +8,7 @@
 #include "../Layer.h"
 #include "../Utils/FindMax.h"
 #include "../Utils/IO.h"
+#include "../Utils/Enum.h"
 
 namespace MiniDNN
 {
@@ -185,8 +186,8 @@ class MaxPooling: public Layer
         void fill_meta_info(MetaInfo& map, int index) const
         {
             std::string ind = internal::to_string(index);
-            map.insert(std::make_pair("Layer" + ind, MiniDNN::layer_type(layer_type())));
-            map.insert(std::make_pair("Activation" + ind, MiniDNN::activation_type(activation_type())));
+            map.insert(std::make_pair("Layer" + ind, internal::layer_id(layer_type())));
+            map.insert(std::make_pair("Activation" + ind, internal::activation_id(activation_type())));
             map.insert(std::make_pair("in_width" + ind, m_channel_cols));
             map.insert(std::make_pair("in_height" + ind, m_channel_rows));
             map.insert(std::make_pair("in_channels" + ind, m_in_channels));
