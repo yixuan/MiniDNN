@@ -36,12 +36,6 @@ class MaxPooling: public Layer
         const int m_out_rows;
         const int m_out_cols;
 
-        const int in_width;
-        const int in_height;
-        const int in_channels;
-        const int pooling_width;
-        const int pooling_height;
-
         IntMatrix m_loc;             // Record the locations of maximums
         Matrix m_z;                  // Max pooling results
         Matrix m_a;                  // Output of this layer, a = act(z)
@@ -62,11 +56,6 @@ class MaxPooling: public Layer
         ///
         MaxPooling(const int in_width_, const int in_height_, const int in_channels_,
                    const int pooling_width_, const int pooling_height_) :
-            in_width(in_width_),
-            in_height(in_height_),
-            in_channels(in_channels_),
-            pooling_width(pooling_width_),
-            pooling_height(pooling_height_),
             Layer(in_width_ * in_height_ * in_channels_,
                   (in_width_ / pooling_width_) * (in_height_ / pooling_height_) * in_channels_),
             m_channel_rows(in_height_), m_channel_cols(in_width_),
@@ -197,11 +186,11 @@ class MaxPooling: public Layer
             std::string ind = to_string(index);
             map.insert(std::make_pair("Layer" + ind, MiniDNN::layer_type(layer_type())));
             map.insert(std::make_pair("Activation" + ind, MiniDNN::activation_type(activation_type())));
-            map.insert(std::make_pair("in_width" + ind, in_width));
-            map.insert(std::make_pair("in_height" + ind, in_height));
-            map.insert(std::make_pair("in_channels" + ind, in_channels));
-            map.insert(std::make_pair("pooling_width" + ind, pooling_width));
-            map.insert(std::make_pair("pooling_height" + ind, pooling_height));
+            map.insert(std::make_pair("in_width" + ind, m_channel_cols));
+            map.insert(std::make_pair("in_height" + ind, m_channel_rows));
+            map.insert(std::make_pair("in_channels" + ind, m_in_channels));
+            map.insert(std::make_pair("pooling_width" + ind, m_pool_cols));
+            map.insert(std::make_pair("pooling_height" + ind, m_pool_rows));
         }
 };
 
