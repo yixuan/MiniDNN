@@ -27,7 +27,7 @@ namespace internal
 /// \return                An std::string containing the number
 ///
 template <class NumberType>
-std::string to_string(const NumberType& num)
+inline std::string to_string(const NumberType& num)
 {
     std::ostringstream convert;
     convert << num;
@@ -40,7 +40,7 @@ std::string to_string(const NumberType& num)
 /// \param dir     Name of the directory to be created
 /// \return        \c true if the directory is successfully created
 ///
-bool create_directory(const std::string& dir)
+inline bool create_directory(const std::string& dir)
 {
 #ifdef _WIN32
 	return 0 == _mkdir(dir.c_str());

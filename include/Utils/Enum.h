@@ -21,7 +21,7 @@ enum LAYER_ENUM
 };
 
 // Convert a hidden layer type string to an integer
-int layer_id(const std::string& type)
+inline int layer_id(const std::string& type)
 {
     if (type == "FullyConnected")
     	return FULLY_CONNECTED;
@@ -46,7 +46,7 @@ enum ACTIVATION_ENUM
 };
 
 // Convert an activation type string to an integer
-int activation_id(const std::string& type)
+inline int activation_id(const std::string& type)
 {
     if (type == "Identity")
     	return IDENTITY;
@@ -74,7 +74,7 @@ enum OUTPUT_ENUM
 };
 
 // Convert an output layer type string to an integer
-int output_id(const std::string& type)
+inline int output_id(const std::string& type)
 {
     if (type == "RegressionMSE")
     	return REGRESSION_MSE;
