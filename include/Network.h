@@ -59,7 +59,7 @@ class Network
             {
                 if (m_layers[i]->in_size() != m_layers[i - 1]->out_size())
                 {
-                    throw std::invalid_argument("Unit sizes do not match");
+                    throw std::invalid_argument("[class Network]: Unit sizes do not match");
                 }
             }
         }
@@ -77,7 +77,7 @@ class Network
             // First layer
             if (input.rows() != m_layers[0]->in_size())
             {
-                throw std::invalid_argument("Input data have incorrect dimension");
+                throw std::invalid_argument("[class Network]: Input data have incorrect dimension");
             }
 
             m_layers[0]->forward(input);
@@ -501,7 +501,7 @@ class Network
 
             if (static_cast<int>(param.size()) != nlayer)
             {
-                throw std::invalid_argument("Parameter size does not match");
+                throw std::invalid_argument("[class Network]: Parameter size does not match");
             }
 
             for (int i = 0; i < nlayer; i++)

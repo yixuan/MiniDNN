@@ -136,7 +136,7 @@ class FullyConnected: public Layer
         {
             if (static_cast<int>(param.size()) != m_weight.size() + m_bias.size())
             {
-                throw std::invalid_argument("Parameter size does not match");
+                throw std::invalid_argument("[class FullyConnected]: Parameter size does not match");
             }
 
             std::copy(param.begin(), param.begin() + m_weight.size(), m_weight.data());
