@@ -11,6 +11,7 @@
 #include "Output.h"
 #include "Callback.h"
 #include "Utils/Random.h"
+#include "Utils/IO.h"
 #include "Utils/MiniDNNStream.h"
 
 namespace MiniDNN
@@ -148,18 +149,19 @@ class Network
         // Create a layer from the network meta information and the index of the layer
         Layer* create_layer(const MetaInfo& map, int index)
         {
-            int layer_type = map.find("Layer" + to_string(index))->second;
-            int activation_type = map.find("Activation" + to_string(index))->second;
+            std::string ind = internal::to_string(index);
+            int layer_type = map.find("Layer" + ind)->second;
+            int activation_type = map.find("Activation" + ind)->second;
             Layer* layer;
 
             if (layer_type == 0)
             {
-                int in_width = map.find("in_width" + to_string(index))->second;
-                int in_height = map.find("in_height" + to_string(index))->second;
-                int in_channels = map.find("in_channels" + to_string(index))->second;
-                int out_channels = map.find("out_channels" + to_string(index))->second;
-                int window_width = map.find("window_width" + to_string(index))->second;
-                int window_height = map.find("window_height" + to_string(index))->second;
+                int in_width = map.find("in_width" + ind)->second;
+                int in_height = map.find("in_height" + ind)->second;
+                int in_channels = map.find("in_channels" + ind)->second;
+                int out_channels = map.find("out_channels" + ind)->second;
+                int window_width = map.find("window_width" + ind)->second;
+                int window_height = map.find("window_height" + ind)->second;
 
                 if (activation_type == 0)
                 {
@@ -200,9 +202,9 @@ class Network
 
             if (layer_type == 1)
             {
-                const int in_width = map.find("in_width" + to_string(index))->second;
-                const int in_height = map.find("in_height" + to_string(index))->second;
-                const int in_channels = map.find("in_channels" + to_string(index))->second;
+                const int in_width = map.find("in_width" + ind)->second;
+                const int in_height = map.find("in_height" + ind)->second;
+                const int in_channels = map.find("in_channels" + ind)->second;
                 const int pooling_width = map.find("pooling_width" + to_string(
                         index))->second;
                 const int pooling_height = map.find("pooling_height" + to_string(
@@ -247,8 +249,8 @@ class Network
 
             if (layer_type == 2)
             {
-                int m_in_size = map.find("m_in_size" + to_string(index))->second;
-                int m_out_size = map.find("m_out_size" + to_string(index))->second;
+                int m_in_size = map.find("m_in_size" + ind)->second;
+                int m_out_size = map.find("m_out_size" + ind)->second;
 
                 if (activation_type == 0)
                 {
@@ -312,7 +314,7 @@ class Network
         // Get the meta information of the network, used to export the NN model
         MetaInfo get_meta_info()
         {
-        	const int nlayer = num_layers();
+            const int nlayer = num_layers();
             MetaInfo map;
             map.insert(std::make_pair("Nlayers", nlayer));
 

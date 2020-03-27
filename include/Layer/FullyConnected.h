@@ -8,6 +8,7 @@
 #include "../Config.h"
 #include "../Layer.h"
 #include "../Utils/Random.h"
+#include "../Utils/IO.h"
 #include "../Utils/MiniDNNStream.h"
 
 namespace MiniDNN
@@ -163,7 +164,7 @@ class FullyConnected: public Layer
 
         void fill_meta_info(MetaInfo& map, int index) const
         {
-            std::string ind = to_string(index);
+            std::string ind = internal::to_string(index);
             map.insert(std::make_pair("Layer" + ind, MiniDNN::layer_type(layer_type())));
             map.insert(std::make_pair("Activation" + ind, MiniDNN::activation_type(activation_type())));
             map.insert(std::make_pair("m_in_size" + ind, in_size()));
