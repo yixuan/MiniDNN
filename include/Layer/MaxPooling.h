@@ -46,7 +46,7 @@ class MaxPooling: public Layer
         Matrix m_z;                  // Max pooling results
         Matrix m_a;                  // Output of this layer, a = act(z)
         Matrix m_din;                // Derivative of the input of this layer.
-        // Note that input of this layer is also the output of previous layer
+                                     // Note that input of this layer is also the output of previous layer
 
     public:
         // Currently we only implement the "valid" rule

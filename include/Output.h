@@ -65,11 +65,7 @@ class Output
         // intermediate result to save some computation
         virtual Scalar loss() const = 0;
 
-        ///
-        /// @brief      Return the layer type, useful to export the NN model
-        ///
-        /// @return     Type of the layer
-        ///
+        // Return the output layer type. It is used to export the NN model.
         virtual std::string output_type() const = 0;
 };
 

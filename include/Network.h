@@ -34,15 +34,13 @@ class Network
         typedef Eigen::RowVectorXi IntegerVector;
 
         RNG                 m_default_rng;      // Built-in RNG
-        RNG&
-        m_rng;              // Reference to the RNG provided by the user,
-        // otherwise reference to m_default_rng
+        RNG&                m_rng;              // Reference to the RNG provided by the user,
+                                                // otherwise reference to m_default_rng
         std::vector<Layer*> m_layers;           // Pointers to hidden layers
         Output*             m_output;           // The output layer
         Callback            m_default_callback; // Default callback function
-        Callback*
-        m_callback;         // Points to user-provided callback function,
-        // otherwise points to m_default_callback
+        Callback*           m_callback;         // Points to user-provided callback function,
+                                                // otherwise points to m_default_callback
         std::map<std::string, int> netMap;
         std::vector< std::vector<Scalar> > params;
 
@@ -489,10 +487,10 @@ class Network
         }
 
         ///
-        /// @brief      Export a net to file inside a certain folder with a certain file name
+        /// Export the network to files.
         ///
-        /// @param[in]  folder    The folder where you want to save the net
-        /// @param[in]  fileName  The filename you want to use for the net
+        /// \param folder   The folder where the network is saved.
+        /// \param fileName The filename for the network.
         ///
         void export_net(std::string folder, std::string fileName)
         {
@@ -504,10 +502,10 @@ class Network
 
 
         ///
-        /// @brief      Reads a net from a specific folder with a specific name
+        /// Read in a network from files.
         ///
-        /// @param[in]  folder    The folder where the net is located
-        /// @param[in]  fileName  The file name of the net
+        /// \param folder   The folder where the network is saved.
+        /// \param fileName The filename for the network.
         ///
         void read_net(std::string folder, std::string fileName)
         {

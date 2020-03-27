@@ -35,7 +35,7 @@ class Layer
 
     public:
         ///
-        /// Constructor
+        /// Constructor.
         ///
         /// \param in_size  Number of input units of this hidden Layer. It must be
         ///                 equal to the number of output units of the previous layer.
@@ -47,7 +47,7 @@ class Layer
         {}
 
         ///
-        /// Virtual destructor
+        /// Virtual destructor.
         ///
         virtual ~Layer() {}
 
@@ -67,7 +67,7 @@ class Layer
         }
 
         ///
-        /// Initialize layer parameters using \f$N(\mu, \sigma^2)\f$ distribution
+        /// Initialize layer parameters using \f$N(\mu, \sigma^2)\f$ distribution.
         ///
         /// \param mu    Mean of the normal distribution.
         /// \param sigma Standard deviation of the normal distribution.
@@ -75,14 +75,14 @@ class Layer
         virtual void init(const Scalar& mu, const Scalar& sigma, RNG& rng) = 0;
 
         ///
-        /// Initialize layer parameters using without distribution, used just when the layer is read from file
+        /// Initialize layer parameters without arguments. It is used when the layer is
+        /// read from file. This function will typically set the sizes of member
+        /// matrices and vectors.
         ///
         virtual void init() = 0;
 
-
-
         ///
-        /// Compute the output of this layer
+        /// Compute the output of this layer.
         ///
         /// The purpose of this function is to let the hidden layer compute information
         /// that will be passed to the next layer as the input. The concrete behavior
@@ -163,16 +163,12 @@ class Layer
         virtual std::vector<Scalar> get_derivatives() const = 0;
 
         ///
-        /// @brief      Return the layer type, useful to export the NN model
-        ///
-        /// @return     Type of the layer
+        /// Return the layer type. It is used to export the NN model.
         ///
         virtual std::string layer_type() const = 0;
 
         ///
-        /// @brief      Return the activation type, useful to export the NN model
-        ///
-        /// @return     Type of the activation type
+        /// Return the activation layer type. It is used to export the NN model.
         ///
         virtual std::string activation_type() const = 0;
 

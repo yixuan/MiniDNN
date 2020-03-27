@@ -35,19 +35,19 @@ class Convolutional: public Layer
         const internal::ConvDims m_dim; // Various dimensions of convolution
 
 
-        Vector m_filter_data;           // Filter parameters. Total length is
-        // (in_channels x out_channels x filter_rows x filter_cols)
-        // See Utils/Convolution.h for its layout
+        Vector m_filter_data;  // Filter parameters. Total length is
+                               // (in_channels x out_channels x filter_rows x filter_cols)
+                               // See Utils/Convolution.h for its layout
 
-        Vector m_df_data;               // Derivative of filters, same dimension as m_filter_data
+        Vector m_df_data;      // Derivative of filters, same dimension as m_filter_data
 
-        Vector m_bias;                  // Bias term for the output channels, out_channels x 1. (One bias term per channel)
-        Vector m_db;                    // Derivative of bias, same dimension as m_bias
+        Vector m_bias;         // Bias term for the output channels, out_channels x 1. (One bias term per channel)
+        Vector m_db;           // Derivative of bias, same dimension as m_bias
 
-        Matrix m_z;                     // Linear term, z = conv(in, w) + b. Each column is an observation
-        Matrix m_a;                     // Output of this layer, a = act(z)
-        Matrix m_din;                   // Derivative of the input of this layer
-        // Note that input of this layer is also the output of previous layer
+        Matrix m_z;            // Linear term, z = conv(in, w) + b. Each column is an observation
+        Matrix m_a;            // Output of this layer, a = act(z)
+        Matrix m_din;          // Derivative of the input of this layer
+                               // Note that input of this layer is also the output of previous layer
 
     public:
         ///
