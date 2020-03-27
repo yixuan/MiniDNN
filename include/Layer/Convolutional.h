@@ -72,23 +72,22 @@ class Convolutional: public Layer
         void init(const Scalar& mu, const Scalar& sigma, RNG& rng)
         {
             // Set data dimension
+            init();
+            // Random initialization of filter parameters
             const int filter_data_size = m_dim.in_channels * m_dim.out_channels *
                                          m_dim.filter_rows * m_dim.filter_cols;
-            m_filter_data.resize(filter_data_size);
-            m_df_data.resize(filter_data_size);
-            // Random initialization of filter parameters
             internal::set_normal_random(m_filter_data.data(), filter_data_size, rng, mu,
                                         sigma);
             // Bias term
-            m_bias.resize(m_dim.out_channels);
-            m_db.resize(m_dim.out_channels);
             internal::set_normal_random(m_bias.data(), m_dim.out_channels, rng, mu, sigma);
         }
 
         void init()
         {
+            // Set parameter dimension
             const int filter_data_size = m_dim.in_channels * m_dim.out_channels *
                                          m_dim.filter_rows * m_dim.filter_cols;
+            // Filter parameters
             m_filter_data.resize(filter_data_size);
             m_df_data.resize(filter_data_size);
             // Bias term

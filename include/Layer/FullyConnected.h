@@ -51,10 +51,8 @@ class FullyConnected: public Layer
 
         void init(const Scalar& mu, const Scalar& sigma, RNG& rng)
         {
-            m_weight.resize(this->m_in_size, this->m_out_size);
-            m_bias.resize(this->m_out_size);
-            m_dw.resize(this->m_in_size, this->m_out_size);
-            m_db.resize(this->m_out_size);
+            // Set parameter dimension
+            init();
             // Set random coefficients
             internal::set_normal_random(m_weight.data(), m_weight.size(), rng, mu, sigma);
             internal::set_normal_random(m_bias.data(), m_bias.size(), rng, mu, sigma);
@@ -62,6 +60,7 @@ class FullyConnected: public Layer
 
         void init()
         {
+            // Set parameter dimension
             m_weight.resize(this->m_in_size, this->m_out_size);
             m_bias.resize(this->m_out_size);
             m_dw.resize(this->m_in_size, this->m_out_size);
