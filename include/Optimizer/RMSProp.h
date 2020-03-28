@@ -2,6 +2,7 @@
 #define OPTIMIZER_RMSPROP_H_
 
 #include <Eigen/Core>
+#include <map>
 #include "../Config.h"
 #include "../Optimizer.h"
 
