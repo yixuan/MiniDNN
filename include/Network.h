@@ -511,7 +511,10 @@ class Network
         ///
         void export_net(const std::string& folder, const std::string& filename) const
         {
-            internal::create_directory(folder);
+            bool created = internal::create_directory(folder);
+            if (!created)
+            	throw std::runtime_error("[class Network]: Folder creation failed");
+
             MetaInfo map = this->get_meta_info();
             internal::write_map(folder + "/" + filename, map);
             std::vector< std::vector<Scalar> > params = this->get_parameters();
