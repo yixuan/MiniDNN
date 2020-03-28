@@ -678,7 +678,7 @@ class Network
             MetaInfo map = this->get_meta_info();
             write_map(folder + "/" + filename, map);
             std::vector< std::vector<Scalar> > params = this->get_parameters();
-            write_parameters(folder, filename, params);
+            internal::write_parameters(folder, filename, params);
         }
 
         ///
@@ -691,11 +691,11 @@ class Network
         {
             MetaInfo map;
             read_map(folder + "/" + filename, map);
-            int Nlayers = map.find("Nlayers")->second;
-            std::vector< std::vector<Scalar> > params = read_parameters(folder, filename, Nlayers);
+            int nlayer = map.find("Nlayers")->second;
+            std::vector< std::vector<Scalar> > params = internal::read_parameters(folder, filename, nlayer);
             m_layers.clear();
 
-            for (int i = 0; i < Nlayers; i++)
+            for (int i = 0; i < nlayer; i++)
             {
                 this->add_layer(this->create_layer(map, i));
             }
