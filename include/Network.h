@@ -12,7 +12,6 @@
 #include "Callback.h"
 #include "Utils/Random.h"
 #include "Utils/IO.h"
-#include "Utils/MiniDNNStream.h"
 
 namespace MiniDNN
 {

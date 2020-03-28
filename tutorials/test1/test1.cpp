@@ -1,5 +1,4 @@
-#include "MiniDNN.h"
-#include "Utils/MiniDNNStream.h"
+#include <MiniDNN.h>
 using namespace MiniDNN;
 
 typedef Eigen::MatrixXd Matrix;

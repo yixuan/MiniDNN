@@ -33,8 +33,6 @@
 #include "Callback.h"
 #include "Callback/VerboseCallback.h"
 
-#include "Utils/MiniDNNStream.h"
-
 #include "Network.h"
 
 
