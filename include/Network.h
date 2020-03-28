@@ -513,7 +513,7 @@ class Network
         {
             bool created = internal::create_directory(folder);
             if (!created)
-            	throw std::runtime_error("[class Network]: Folder creation failed");
+                throw std::runtime_error("[class Network]: Folder creation failed");
 
             MetaInfo map = this->get_meta_info();
             internal::write_map(folder + "/" + filename, map);
