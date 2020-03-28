@@ -1,11 +1,14 @@
 #ifndef UTILS_IO_H_
 #define UTILS_IO_H_
 
-#include <string>   // std::string
-#include <sstream>  // std::ostringstream
-#include <fstream>  // std::ofstream, std::ifstream
-#include <iterator> // std::ostream_iterator, std::istreambuf_iterator, std::back_inserter
-#include <vector>   // std::vector
+#include <map>       // std::map
+#include <string>    // std::string
+#include <sstream>   // std::ostringstream
+#include <fstream>   // std::ofstream, std::ifstream
+#include <iterator>  // std::ostream_iterator, std::istreambuf_iterator, std::back_inserter
+#include <vector>    // std::vector
+#include <stdexcept> // std::runtime_error, std::invalid_argument
+#include <cstdlib>   // atoi
 
 #ifdef _WIN32
 	#include <windows.h>  // _mkdir
@@ -63,6 +66,9 @@ inline void write_vector_to_file(
 )
 {
     std::ofstream ofs(filename.c_str(), std::ios::out | std::ios::binary);
+    if (ofs.fail())
+    	throw std::runtime_error("Error while opening file");
+
     std::ostream_iterator<char> osi(ofs);
     const char* begin_byte = reinterpret_cast<const char*>(&vec[0]);
     const char* end_byte = begin_byte + vec.size() * sizeof(Scalar);
@@ -81,7 +87,8 @@ inline void write_parameters(
     const std::vector< std::vector< Scalar> >& params
 )
 {
-    for (int i = 0; i < params.size(); i++)
+    const int nfiles = params.size();
+    for (int i = 0; i < nfiles; i++)
     {
         write_vector_to_file(params[i], folder + "/" + filename + to_string(i));
     }
@@ -93,10 +100,14 @@ inline void write_parameters(
 /// \param filename     The filename of the input
 /// \return             The vector that has been read
 ///
-std::vector<Scalar> read_vector_from_file(const std::string& filename)
+inline std::vector<Scalar> read_vector_from_file(const std::string& filename)
 {
-    std::vector<char> buffer;
+
     std::ifstream ifs(filename.c_str(), std::ios::in | std::ifstream::binary);
+    if (ifs.fail())
+    	throw std::runtime_error("Error while opening file");
+
+    std::vector<char> buffer;
     std::istreambuf_iterator<char> iter(ifs);
     std::istreambuf_iterator<char> end;
     std::copy(iter, end, std::back_inserter(buffer));
@@ -113,7 +124,7 @@ std::vector<Scalar> read_vector_from_file(const std::string& filename)
 /// \param nlayer       Number of layers in the NN model
 /// \return             A vector of vectors that contains the NN parameters
 ///
-std::vector< std::vector< Scalar> > read_parameters(
+inline std::vector< std::vector< Scalar> > read_parameters(
 	const std::string& folder, const std::string& filename, int nlayer
 )
 {
