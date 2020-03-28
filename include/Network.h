@@ -12,6 +12,7 @@
 #include "Callback.h"
 #include "Utils/Random.h"
 #include "Utils/IO.h"
+#include "Utils/Factory.h"
 
 namespace MiniDNN
 {
@@ -143,169 +144,6 @@ class Network
             {
                 m_layers[i]->update(opt);
             }
-        }
-
-        // Create a layer from the network meta information and the index of the layer
-        Layer* create_layer(const MetaInfo& map, int index)
-        {
-            std::string ind = internal::to_string(index);
-            int layer_type = map.find("Layer" + ind)->second;
-            int activation_type = map.find("Activation" + ind)->second;
-            Layer* layer;
-
-            if (layer_type == 0)
-            {
-                int in_width = map.find("in_width" + ind)->second;
-                int in_height = map.find("in_height" + ind)->second;
-                int in_channels = map.find("in_channels" + ind)->second;
-                int out_channels = map.find("out_channels" + ind)->second;
-                int window_width = map.find("window_width" + ind)->second;
-                int window_height = map.find("window_height" + ind)->second;
-
-                if (activation_type == 0)
-                {
-                    layer = new Convolutional<Identity>(in_width, in_height, in_channels,
-                                                        out_channels, window_width, window_height);
-                }
-
-                if (activation_type == 1)
-                {
-                    layer = new Convolutional<ReLU>(in_width, in_height, in_channels,
-                                                    out_channels, window_width, window_height);
-                }
-
-                if (activation_type == 2)
-                {
-                    layer = new Convolutional<Sigmoid>(in_width, in_height, in_channels,
-                                                       out_channels, window_width, window_height);
-                }
-
-                if (activation_type == 3)
-                {
-                    layer = new Convolutional<Softmax>(in_width, in_height, in_channels,
-                                                       out_channels, window_width, window_height);
-                }
-
-                if (activation_type == 4)
-                {
-                    layer = new Convolutional<Mish>(in_width, in_height, in_channels,
-                                                    out_channels, window_width, window_height);
-                }
-
-                if (activation_type == 5)
-                {
-                    layer = new Convolutional<Tanh>(in_width, in_height, in_channels,
-                                                    out_channels, window_width, window_height);
-                }
-            }
-
-            if (layer_type == 1)
-            {
-                const int in_width = map.find("in_width" + ind)->second;
-                const int in_height = map.find("in_height" + ind)->second;
-                const int in_channels = map.find("in_channels" + ind)->second;
-                const int pooling_width = map.find("pooling_width" + ind)->second;
-                const int pooling_height = map.find("pooling_height" + ind)->second;
-
-                if (activation_type == 0)
-                {
-                    layer = new MaxPooling<Identity>(in_width, in_height, in_channels,
-                                                     pooling_width, pooling_height);
-                }
-
-                if (activation_type == 1)
-                {
-                    layer = new MaxPooling<ReLU>(in_width, in_height, in_channels,
-                                                 pooling_width, pooling_height);
-                }
-
-                if (activation_type == 2)
-                {
-                    layer = new MaxPooling<Sigmoid>(in_width, in_height, in_channels,
-                                                    pooling_width, pooling_height);
-                }
-
-                if (activation_type == 3)
-                {
-                    layer = new MaxPooling<Softmax>(in_width, in_height, in_channels,
-                                                    pooling_width, pooling_height);
-                }
-
-                if (activation_type == 4)
-                {
-                    layer = new MaxPooling<Mish>(in_width, in_height, in_channels,
-                                                 pooling_width, pooling_height);
-                }
-
-                if (activation_type == 5)
-                {
-                    layer = new MaxPooling<Tanh>(in_width, in_height, in_channels,
-                                                 pooling_width, pooling_height);
-                }
-            }
-
-            if (layer_type == 2)
-            {
-                int m_in_size = map.find("m_in_size" + ind)->second;
-                int m_out_size = map.find("m_out_size" + ind)->second;
-
-                if (activation_type == 0)
-                {
-                    layer = new FullyConnected<Identity>(m_in_size, m_out_size);
-                }
-
-                if (activation_type == 1)
-                {
-                    layer = new FullyConnected<ReLU>(m_in_size, m_out_size);
-                }
-
-                if (activation_type == 2)
-                {
-                    layer = new FullyConnected<Sigmoid>(m_in_size, m_out_size);
-                }
-
-                if (activation_type == 3)
-                {
-                    layer = new FullyConnected<Softmax>(m_in_size, m_out_size);
-                }
-
-                if (activation_type == 4)
-                {
-                    layer = new FullyConnected<Mish>(m_in_size, m_out_size);
-                }
-
-                if (activation_type == 5)
-                {
-                    layer = new FullyConnected<Tanh>(m_in_size, m_out_size);
-                }
-            }
-
-            layer->init();
-            return layer;
-        }
-
-        // Create an output layer from the network meta information
-        Output* create_output(const MetaInfo& map)
-        {
-            Output* output;
-            int output_type = map.find("OutputLayer")->second;
-
-            if (output_type == 0)
-            {
-                output = new RegressionMSE();
-            }
-
-            if (output_type == 1)
-            {
-                output = new MultiClassEntropy();
-            }
-
-            if (output_type == 2)
-            {
-                output = new BinaryClassEntropy();
-            }
-
-            return output;
         }
 
         // Get the meta information of the network, used to export the NN model
@@ -696,11 +534,11 @@ class Network
 
             for (int i = 0; i < nlayer; i++)
             {
-                this->add_layer(this->create_layer(map, i));
+                this->add_layer(internal::create_layer(map, i));
             }
 
             this->set_parameters(params);
-            this->set_output(this->create_output(map));
+            this->set_output(internal::create_output(map));
         }
 };
 
