@@ -66,7 +66,7 @@ int main()
     // Read structure and paramaters from file
     netFromFile.read_net("./NetFolder/", "NetFile");
     // Test that they give the same prediction
-    std::cout << (yt - netFromFile.predict(xt)).norm()/yt.norm() << std::endl;
+    std::cout << (pred - netFromFile.predict(xt)).norm() << std::endl;
     // Layer objects will be freed by the network object,
     // so do not manually delete them
     return 0;
