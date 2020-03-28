@@ -139,6 +139,53 @@ inline std::vector< std::vector< Scalar> > read_parameters(
     return params;
 }
 
+///
+/// Write a map object to file
+///
+/// \param filename     The filename of the output
+/// \param map          The map object to be exported
+///
+inline void write_map(const std::string& filename, const std::map<std::string, int>& map)
+{
+    if (map.empty())
+        return;
+
+    std::ofstream ofs(filename.c_str(), std::ios::out);
+    if (ofs.fail())
+        throw std::runtime_error("Error while opening file");
+
+    for (std::map<std::string, int>::const_iterator it = map.begin(); it != map.end(); it++)
+    {
+        ofs << it->first << "=" << it->second << std::endl;
+    }
+}
+
+///
+/// Read in a map object from file
+///
+/// \param filename     The filename of the input
+/// \param map          The output map object
+///
+inline void read_map(const std::string& filename, std::map<std::string, int>& map)
+{
+    std::ifstream ifs(filename.c_str(), std::ios::in);
+    if (ifs.fail())
+        throw std::runtime_error("Error while opening file");
+
+    map.clear();
+    std::string buf;
+    while (std::getline(ifs, buf))
+    {
+        std::size_t sep = buf.find('=');
+        if (sep == std::string::npos)
+            throw std::invalid_argument("File format error");
+
+        std::string key = buf.substr(0, sep);
+        std::string value = buf.substr(sep + 1, buf.length() - sep - 1);
+        map[key] = atoi(value.c_str());
+    }
+}
+
 
 } // namespace internal
 

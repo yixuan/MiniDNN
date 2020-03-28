@@ -676,7 +676,7 @@ class Network
         {
             internal::create_directory(folder);
             MetaInfo map = this->get_meta_info();
-            write_map(folder + "/" + filename, map);
+            internal::write_map(folder + "/" + filename, map);
             std::vector< std::vector<Scalar> > params = this->get_parameters();
             internal::write_parameters(folder, filename, params);
         }
@@ -690,7 +690,7 @@ class Network
         void read_net(const std::string& folder, const std::string& filename)
         {
             MetaInfo map;
-            read_map(folder + "/" + filename, map);
+            internal::read_map(folder + "/" + filename, map);
             int nlayer = map.find("Nlayers")->second;
             std::vector< std::vector<Scalar> > params = internal::read_parameters(folder, filename, nlayer);
             m_layers.clear();
