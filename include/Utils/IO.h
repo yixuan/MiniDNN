@@ -11,9 +11,9 @@
 #include <cstdlib>   // atoi
 
 #ifdef _WIN32
-	#include <windows.h>  // _mkdir
+    #include <windows.h>  // _mkdir
 #else
-	#include <sys/stat.h> // mkdir
+    #include <sys/stat.h> // mkdir
 #endif
 
 #include "../Config.h"
@@ -49,9 +49,9 @@ inline std::string to_string(const NumberType& num)
 inline bool create_directory(const std::string& dir)
 {
 #ifdef _WIN32
-	return 0 == _mkdir(dir.c_str());
+    return 0 == _mkdir(dir.c_str());
 #else
-	return 0 == mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+    return 0 == mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
 #endif
 }
 
@@ -62,12 +62,12 @@ inline bool create_directory(const std::string& dir)
 /// \param filename     The filename of the output
 ///
 inline void write_vector_to_file(
-	const std::vector<Scalar>& vec, const std::string& filename
+    const std::vector<Scalar>& vec, const std::string& filename
 )
 {
     std::ofstream ofs(filename.c_str(), std::ios::out | std::ios::binary);
     if (ofs.fail())
-    	throw std::runtime_error("Error while opening file");
+        throw std::runtime_error("Error while opening file");
 
     std::ostream_iterator<char> osi(ofs);
     const char* begin_byte = reinterpret_cast<const char*>(&vec[0]);
@@ -83,7 +83,7 @@ inline void write_vector_to_file(
 /// \param params       The parameters of the NN model
 ///
 inline void write_parameters(
-	const std::string& folder, const std::string& filename,
+    const std::string& folder, const std::string& filename,
     const std::vector< std::vector< Scalar> >& params
 )
 {
@@ -105,7 +105,7 @@ inline std::vector<Scalar> read_vector_from_file(const std::string& filename)
 
     std::ifstream ifs(filename.c_str(), std::ios::in | std::ifstream::binary);
     if (ifs.fail())
-    	throw std::runtime_error("Error while opening file");
+        throw std::runtime_error("Error while opening file");
 
     std::vector<char> buffer;
     std::istreambuf_iterator<char> iter(ifs);
@@ -125,7 +125,7 @@ inline std::vector<Scalar> read_vector_from_file(const std::string& filename)
 /// \return             A vector of vectors that contains the NN parameters
 ///
 inline std::vector< std::vector< Scalar> > read_parameters(
-	const std::string& folder, const std::string& filename, int nlayer
+    const std::string& folder, const std::string& filename, int nlayer
 )
 {
     std::vector< std::vector< Scalar> > params;
