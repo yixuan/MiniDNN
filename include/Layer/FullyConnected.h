@@ -166,8 +166,8 @@ class FullyConnected: public Layer
             std::string ind = internal::to_string(index);
             map.insert(std::make_pair("Layer" + ind, internal::layer_id(layer_type())));
             map.insert(std::make_pair("Activation" + ind, internal::activation_id(activation_type())));
-            map.insert(std::make_pair("m_in_size" + ind, in_size()));
-            map.insert(std::make_pair("m_out_size" + ind, out_size()));
+            map.insert(std::make_pair("in_size" + ind, in_size()));
+            map.insert(std::make_pair("out_size" + ind, out_size()));
         }
 };
 
