@@ -55,10 +55,10 @@ class RNG
             m_rand = (seed ? (seed & m_max) : 1);
         }
 
-        virtual double rand()
+        virtual Scalar rand()
         {
             m_rand = next_long_rand(m_rand);
-            return double(m_rand) / double(m_max);
+            return Scalar(m_rand) / Scalar(m_max);
         }
 };
 
