@@ -6,7 +6,11 @@ namespace MiniDNN
 
 
 // Floating-point number type
+#ifndef MDNN_SCALAR
 typedef double Scalar;
+#else
+typedef MDNN_SCALAR Scalar;
+#endif
 
 
 } // namespace MiniDNN

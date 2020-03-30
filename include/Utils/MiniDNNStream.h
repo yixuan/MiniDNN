@@ -242,7 +242,7 @@ void read_dense_tensor(TensorType& Tensor, std::string folder,
 }
 
 ///
-/// @brief      Write a std::vector<double> to file.
+/// @brief      Write a std::vector<Scalar> to file.
 ///
 /// @param[in]  myVector  The vector you want to write
 /// @param[in]  filename  The filename of the std::vector
@@ -253,11 +253,11 @@ void write_vector_to_file(const std::vector<Scalar>& myVector,
     std::ofstream ofs(filename.c_str(), std::ios::out | std::ios::binary);
     std::ostream_iterator<char> osi(ofs);
     const char* beginByte = (char*)&myVector[0];
-    const char* endByte = (char*)&myVector.back() + sizeof(double);
+    const char* endByte = (char*)&myVector.back() + sizeof(Scalar);
     std::copy(beginByte, endByte, osi);
 }
 ///
-/// @brief      Reads a std::vector<double> from file.
+/// @brief      Reads a std::vector<Scalar> from file.
 ///
 /// @param[in]  filename  The filename of the vector
 ///
@@ -270,7 +270,7 @@ std::vector<Scalar> read_vector_from_file(std::string filename)
     std::istreambuf_iterator<char> iter(ifs);
     std::istreambuf_iterator<char> end;
     std::copy(iter, end, std::back_inserter(buffer));
-    std::vector<double> newVector(buffer.size() / sizeof(double));
+    std::vector<Scalar> newVector(buffer.size() / sizeof(Scalar));
     memcpy(&newVector[0], &buffer[0], buffer.size());
     return newVector;
 }
@@ -530,7 +530,7 @@ std::ostream& operator<<(std::ostream& os,
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, std::vector<double>& myVector)
+std::ostream& operator<<(std::ostream& os, std::vector<Scalar>& myVector)
 {
     for (int i = 0; i < myVector.size(); i++)
     {
