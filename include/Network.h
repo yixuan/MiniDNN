@@ -3,6 +3,7 @@
 
 #include <Eigen/Core>
 #include <vector>
+#include <map>
 #include <stdexcept>
 #include "Config.h"
 #include "RNG.h"
@@ -10,7 +11,8 @@
 #include "Output.h"
 #include "Callback.h"
 #include "Utils/Random.h"
-#include "Utils/MiniDNNStream.h"
+#include "Utils/IO.h"
+#include "Utils/Factory.h"
 
 namespace MiniDNN
 {
@@ -32,19 +34,16 @@ class Network
     private:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::RowVectorXi IntegerVector;
+        typedef std::map<std::string, int> MetaInfo;
 
         RNG                 m_default_rng;      // Built-in RNG
-        RNG&
-        m_rng;              // Reference to the RNG provided by the user,
-        // otherwise reference to m_default_rng
+        RNG&                m_rng;              // Reference to the RNG provided by the user,
+                                                // otherwise reference to m_default_rng
         std::vector<Layer*> m_layers;           // Pointers to hidden layers
         Output*             m_output;           // The output layer
         Callback            m_default_callback; // Default callback function
-        Callback*
-        m_callback;         // Points to user-provided callback function,
-        // otherwise points to m_default_callback
-        std::map<std::string, int> netMap;
-        std::vector< std::vector<Scalar> > params;
+        Callback*           m_callback;         // Points to user-provided callback function,
+                                                // otherwise points to m_default_callback
 
         // Check dimensions of layers
         void check_unit_sizes() const
@@ -60,7 +59,7 @@ class Network
             {
                 if (m_layers[i]->in_size() != m_layers[i - 1]->out_size())
                 {
-                    throw std::invalid_argument("Unit sizes do not match");
+                    throw std::invalid_argument("[class Network]: Unit sizes do not match");
                 }
             }
         }
@@ -78,7 +77,7 @@ class Network
             // First layer
             if (input.rows() != m_layers[0]->in_size())
             {
-                throw std::invalid_argument("Input data have incorrect dimension");
+                throw std::invalid_argument("[class Network]: Input data have incorrect dimension");
             }
 
             m_layers[0]->forward(input);
@@ -145,6 +144,22 @@ class Network
             {
                 m_layers[i]->update(opt);
             }
+        }
+
+        // Get the meta information of the network, used to export the NN model
+        MetaInfo get_meta_info() const
+        {
+            const int nlayer = num_layers();
+            MetaInfo map;
+            map.insert(std::make_pair("Nlayers", nlayer));
+
+            for (int i = 0; i < nlayer; i++)
+            {
+                m_layers[i]->fill_meta_info(map, i);
+            }
+
+            map.insert(std::make_pair("OutputLayer", internal::output_id(m_output->output_type())));
+            return map;
         }
 
     public:
@@ -321,7 +336,7 @@ class Network
 
             if (static_cast<int>(param.size()) != nlayer)
             {
-                throw std::invalid_argument("Parameter size does not match");
+                throw std::invalid_argument("[class Network]: Parameter size does not match");
             }
 
             for (int i = 0; i < nlayer; i++)
@@ -489,241 +504,44 @@ class Network
         }
 
         ///
-        /// @brief      Export a net to file inside a certain folder with a certain file name
+        /// Export the network to files.
         ///
-        /// @param[in]  folder    The folder where you want to save the net
-        /// @param[in]  fileName  The filename you want to use for the net
+        /// \param folder   The folder where the network is saved.
+        /// \param fileName The filename for the network.
         ///
-        void export_net(std::string folder, std::string fileName)
+        void export_net(const std::string& folder, const std::string& filename) const
         {
-            system(("mkdir " + folder).c_str());
-            fill_map();
-            write_map(folder + "/" + fileName, netMap);
-            write_parameters(folder, fileName, params);
+            bool created = internal::create_directory(folder);
+            if (!created)
+                throw std::runtime_error("[class Network]: Folder creation failed");
+
+            MetaInfo map = this->get_meta_info();
+            internal::write_map(folder + "/" + filename, map);
+            std::vector< std::vector<Scalar> > params = this->get_parameters();
+            internal::write_parameters(folder, filename, params);
         }
 
-
         ///
-        /// @brief      Reads a net from a specific folder with a specific name
+        /// Read in a network from files.
         ///
-        /// @param[in]  folder    The folder where the net is located
-        /// @param[in]  fileName  The file name of the net
+        /// \param folder   The folder where the network is saved.
+        /// \param fileName The filename for the network.
         ///
-        void read_net(std::string folder, std::string fileName)
+        void read_net(const std::string& folder, const std::string& filename)
         {
-            netMap.clear();
-            read_map(folder + "/" + fileName, netMap);
-            int Nlayers = netMap.find("Nlayers")->second;
-            params = read_parameters(folder, fileName, Nlayers);
+            MetaInfo map;
+            internal::read_map(folder + "/" + filename, map);
+            int nlayer = map.find("Nlayers")->second;
+            std::vector< std::vector<Scalar> > params = internal::read_parameters(folder, filename, nlayer);
             m_layers.clear();
 
-            for (int i = 0; i < Nlayers; i++)
+            for (int i = 0; i < nlayer; i++)
             {
-                add_layer(create_layer(i));
+                this->add_layer(internal::create_layer(map, i));
             }
 
             this->set_parameters(params);
-            set_output(create_output());
-        }
-
-        ///
-        /// @brief      Creates a layer from the netMap given the index of the layer
-        ///
-        /// @param[in]  index  The index of the layer
-        ///
-        /// @return     a pointer to the layer object
-        ///
-        Layer* create_layer(int index)
-        {
-            int layer_type = netMap.find("Layer" + to_string(index))->second;
-            int activation_type = netMap.find("Activation" + to_string(index))->second;
-            Layer* layer;
-
-            if (layer_type == 0)
-            {
-                int in_width = netMap.find("in_width" + to_string(index))->second;
-                int in_height = netMap.find("in_height" + to_string(index))->second;
-                int in_channels = netMap.find("in_channels" + to_string(index))->second;
-                int out_channels = netMap.find("out_channels" + to_string(index))->second;
-                int window_width = netMap.find("window_width" + to_string(index))->second;
-                int window_height = netMap.find("window_height" + to_string(index))->second;
-
-                if (activation_type == 0)
-                {
-                    layer = new Convolutional<Identity>(in_width, in_height, in_channels,
-                                                        out_channels, window_width, window_height);
-                }
-
-                if (activation_type == 1)
-                {
-                    layer = new Convolutional<ReLU>(in_width, in_height, in_channels,
-                                                    out_channels, window_width, window_height);
-                }
-
-                if (activation_type == 2)
-                {
-                    layer = new Convolutional<Sigmoid>(in_width, in_height, in_channels,
-                                                       out_channels, window_width, window_height);
-                }
-
-                if (activation_type == 3)
-                {
-                    layer = new Convolutional<Softmax>(in_width, in_height, in_channels,
-                                                       out_channels, window_width, window_height);
-                }
-
-                if (activation_type == 4)
-                {
-                    layer = new Convolutional<Mish>(in_width, in_height, in_channels,
-                                                    out_channels, window_width, window_height);
-                }
-
-                if (activation_type == 5)
-                {
-                    layer = new Convolutional<Tanh>(in_width, in_height, in_channels,
-                                                    out_channels, window_width, window_height);
-                }
-            }
-
-            if (layer_type == 1)
-            {
-                const int in_width = netMap.find("in_width" + to_string(index))->second;
-                const int in_height = netMap.find("in_height" + to_string(index))->second;
-                const int in_channels = netMap.find("in_channels" + to_string(index))->second;
-                const int pooling_width = netMap.find("pooling_width" + to_string(
-                        index))->second;
-                const int pooling_height = netMap.find("pooling_height" + to_string(
-                        index))->second;
-
-                if (activation_type == 0)
-                {
-                    layer = new MaxPooling<Identity>(in_width, in_height, in_channels,
-                                                     pooling_width, pooling_height);
-                }
-
-                if (activation_type == 1)
-                {
-                    layer = new MaxPooling<ReLU>(in_width, in_height, in_channels,
-                                                 pooling_width, pooling_height);
-                }
-
-                if (activation_type == 2)
-                {
-                    layer = new MaxPooling<Sigmoid>(in_width, in_height, in_channels,
-                                                    pooling_width, pooling_height);
-                }
-
-                if (activation_type == 3)
-                {
-                    layer = new MaxPooling<Softmax>(in_width, in_height, in_channels,
-                                                    pooling_width, pooling_height);
-                }
-
-                if (activation_type == 4)
-                {
-                    layer = new MaxPooling<Mish>(in_width, in_height, in_channels,
-                                                 pooling_width, pooling_height);
-                }
-
-                if (activation_type == 5)
-                {
-                    layer = new MaxPooling<Tanh>(in_width, in_height, in_channels,
-                                                 pooling_width, pooling_height);
-                }
-            }
-
-            if (layer_type == 2)
-            {
-                int m_in_size = netMap.find("m_in_size" + to_string(index))->second;
-                int m_out_size = netMap.find("m_out_size" + to_string(index))->second;
-
-                if (activation_type == 0)
-                {
-                    layer = new FullyConnected<Identity>(m_in_size, m_out_size);
-                }
-
-                if (activation_type == 1)
-                {
-                    layer = new FullyConnected<ReLU>(m_in_size, m_out_size);
-                }
-
-                if (activation_type == 2)
-                {
-                    layer = new FullyConnected<Sigmoid>(m_in_size, m_out_size);
-                }
-
-                if (activation_type == 3)
-                {
-                    layer = new FullyConnected<Softmax>(m_in_size, m_out_size);
-                }
-
-                if (activation_type == 4)
-                {
-                    layer = new FullyConnected<Mish>(m_in_size, m_out_size);
-                }
-
-                if (activation_type == 5)
-                {
-                    layer = new FullyConnected<Tanh>(m_in_size, m_out_size);
-                }
-            }
-
-            layer->init();
-            return layer;
-        }
-
-        ///
-        /// @brief      Creates an output layer from the netMap
-        ///
-        /// @return     a pointer to the output layer
-        ///
-        Output* create_output()
-        {
-            Output* output;
-            int output_type = netMap.find("OutputLayer")->second;
-
-            if (output_type == 0)
-            {
-                output = new RegressionMSE();
-            }
-
-            if (output_type == 1)
-            {
-                output = new MultiClassEntropy();
-            }
-
-            if (output_type == 2)
-            {
-                output = new BinaryClassEntropy();
-            }
-
-            return output;
-        }
-
-        ///
-        /// @brief      Fill the netMap object, useful to export the net
-        ///
-        /// @return     the netMap
-        ///
-        std::map<std::string, int> fill_map()
-        {
-            netMap.clear();
-            M_Assert(num_layers() > 0, "The net has zero layers");
-            netMap.insert(std::pair<std::string, int>("Nlayers", num_layers()));
-            params = get_parameters();
-
-            for (int i = 0; i < num_layers(); i++)
-            {
-                m_layers[i]->fill_map(netMap, i);
-            }
-
-            netMap.insert(std::pair<std::string, int>("OutputLayer",
-                          output_type(m_output->output_type())));
-            return netMap;
-        }
-        std::map<std::string, int> get_net_map()
-        {
-            return netMap;
+            this->set_output(internal::create_output(map));
         }
 };
 

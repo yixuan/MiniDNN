@@ -8,6 +8,8 @@
 #include "../Layer.h"
 #include "../Utils/Convolution.h"
 #include "../Utils/Random.h"
+#include "../Utils/IO.h"
+#include "../Utils/Enum.h"
 
 
 namespace MiniDNN
@@ -30,23 +32,24 @@ class Convolutional: public Layer
         typedef Matrix::ConstAlignedMapType ConstAlignedMapMat;
         typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
         typedef Vector::AlignedMapType AlignedMapVec;
+        typedef std::map<std::string, int> MetaInfo;
 
         const internal::ConvDims m_dim; // Various dimensions of convolution
 
 
-        Vector m_filter_data;           // Filter parameters. Total length is
-        // (in_channels x out_channels x filter_rows x filter_cols)
-        // See Utils/Convolution.h for its layout
+        Vector m_filter_data;  // Filter parameters. Total length is
+                               // (in_channels x out_channels x filter_rows x filter_cols)
+                               // See Utils/Convolution.h for its layout
 
-        Vector m_df_data;               // Derivative of filters, same dimension as m_filter_data
+        Vector m_df_data;      // Derivative of filters, same dimension as m_filter_data
 
-        Vector m_bias;                  // Bias term for the output channels, out_channels x 1. (One bias term per channel)
-        Vector m_db;                    // Derivative of bias, same dimension as m_bias
+        Vector m_bias;         // Bias term for the output channels, out_channels x 1. (One bias term per channel)
+        Vector m_db;           // Derivative of bias, same dimension as m_bias
 
-        Matrix m_z;                     // Linear term, z = conv(in, w) + b. Each column is an observation
-        Matrix m_a;                     // Output of this layer, a = act(z)
-        Matrix m_din;                   // Derivative of the input of this layer
-        // Note that input of this layer is also the output of previous layer
+        Matrix m_z;            // Linear term, z = conv(in, w) + b. Each column is an observation
+        Matrix m_a;            // Output of this layer, a = act(z)
+        Matrix m_din;          // Derivative of the input of this layer
+                               // Note that input of this layer is also the output of previous layer
 
     public:
         ///
@@ -71,23 +74,22 @@ class Convolutional: public Layer
         void init(const Scalar& mu, const Scalar& sigma, RNG& rng)
         {
             // Set data dimension
+            init();
+            // Random initialization of filter parameters
             const int filter_data_size = m_dim.in_channels * m_dim.out_channels *
                                          m_dim.filter_rows * m_dim.filter_cols;
-            m_filter_data.resize(filter_data_size);
-            m_df_data.resize(filter_data_size);
-            // Random initialization of filter parameters
             internal::set_normal_random(m_filter_data.data(), filter_data_size, rng, mu,
                                         sigma);
             // Bias term
-            m_bias.resize(m_dim.out_channels);
-            m_db.resize(m_dim.out_channels);
             internal::set_normal_random(m_bias.data(), m_dim.out_channels, rng, mu, sigma);
         }
 
         void init()
         {
+            // Set parameter dimension
             const int filter_data_size = m_dim.in_channels * m_dim.out_channels *
                                          m_dim.filter_rows * m_dim.filter_cols;
+            // Filter parameters
             m_filter_data.resize(filter_data_size);
             m_df_data.resize(filter_data_size);
             // Bias term
@@ -207,7 +209,7 @@ class Convolutional: public Layer
         {
             if (static_cast<int>(param.size()) != m_filter_data.size() + m_bias.size())
             {
-                throw std::invalid_argument("Parameter size does not match");
+                throw std::invalid_argument("[class Convolutional]: Parameter size does not match");
             }
 
             std::copy(param.begin(), param.begin() + m_filter_data.size(),
@@ -235,26 +237,18 @@ class Convolutional: public Layer
             return Activation::return_type();
         }
 
-        void fill_map (std::map<std::string, int>& netMap, int index)
+        void fill_meta_info(MetaInfo& map, int index) const
         {
-            netMap.insert(std::pair<std::string, int>("Layer" + to_string(index),
-                          MiniDNN::layer_type(layer_type())));
-            netMap.insert(std::pair<std::string, int>("Activation" + to_string(
-                              index), MiniDNN::activation_type(activation_type())));
-            netMap.insert(std::pair<std::string, int>("in_channels" + to_string(
-                              index), m_dim.in_channels));
-            netMap.insert(std::pair<std::string, int>("out_channels" + to_string(
-                              index), m_dim.out_channels));
-            netMap.insert(std::pair<std::string, int>("in_height" + to_string(
-                              index), m_dim.channel_rows));
-            netMap.insert(std::pair<std::string, int>("in_width" + to_string(
-                              index), m_dim.channel_cols));
-            netMap.insert(std::pair<std::string, int>("window_width" + to_string(
-                              index), m_dim.filter_cols));
-            netMap.insert(std::pair<std::string, int>("window_height" + to_string(
-                              index), m_dim.filter_rows));
+            std::string ind = internal::to_string(index);
+            map.insert(std::make_pair("Layer" + ind, internal::layer_id(layer_type())));
+            map.insert(std::make_pair("Activation" + ind, internal::activation_id(activation_type())));
+            map.insert(std::make_pair("in_channels" + ind, m_dim.in_channels));
+            map.insert(std::make_pair("out_channels" + ind, m_dim.out_channels));
+            map.insert(std::make_pair("in_height" + ind, m_dim.channel_rows));
+            map.insert(std::make_pair("in_width" + ind, m_dim.channel_cols));
+            map.insert(std::make_pair("window_width" + ind, m_dim.filter_cols));
+            map.insert(std::make_pair("window_height" + ind, m_dim.filter_rows));
         }
-
 };
 
 

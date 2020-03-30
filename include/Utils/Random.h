@@ -27,7 +27,7 @@ inline void shuffle(int* arr, const int n, RNG& rng)
 }
 
 template <typename DerivedX, typename DerivedY, typename XType, typename YType>
-int create_shuffled_batches(
+inline int create_shuffled_batches(
     const Eigen::MatrixBase<DerivedX>& x, const Eigen::MatrixBase<DerivedY>& y,
     int batch_size, RNG& rng,
     std::vector<XType>& x_batches, std::vector<YType>& y_batches

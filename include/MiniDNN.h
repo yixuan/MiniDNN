@@ -12,12 +12,12 @@
 #include "Layer/Convolutional.h"
 #include "Layer/MaxPooling.h"
 
-#include "Activation/ReLU.h"
-#include "Activation/Mish.h"
 #include "Activation/Identity.h"
+#include "Activation/ReLU.h"
 #include "Activation/Sigmoid.h"
 #include "Activation/Softmax.h"
 #include "Activation/Tanh.h"
+#include "Activation/Mish.h"
 
 #include "Output.h"
 #include "Output/RegressionMSE.h"
@@ -32,8 +32,6 @@
 
 #include "Callback.h"
 #include "Callback/VerboseCallback.h"
-
-#include "Utils/MiniDNNStream.h"
 
 #include "Network.h"
 

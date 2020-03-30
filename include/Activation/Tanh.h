@@ -27,8 +27,9 @@ class Tanh
         }
 
         // Apply the Jacobian matrix J to a vector f
-        // J = d_a / d_z = 1-tanh^2
-        // g = J * f = 1-a^2 * f
+        // tanh'(x) = 1 - tanh(x)^2
+        // J = d_a / d_z = diag(1 - a^2)
+        // g = J * f = (1 - a^2) .* f
         // Z = [z1, ..., zn], G = [g1, ..., gn], F = [f1, ..., fn]
         // Note: When entering this function, Z and G may point to the same matrix
         static inline void apply_jacobian(const Matrix& Z, const Matrix& A,

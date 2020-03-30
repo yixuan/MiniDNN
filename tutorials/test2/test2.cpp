@@ -1,5 +1,4 @@
-#include "MiniDNN.h"
-#include "Utils/MiniDNNStream.h"
+#include <MiniDNN.h>
 using namespace MiniDNN;
 
 typedef Eigen::MatrixXd Matrix;
@@ -43,7 +42,7 @@ int main()
     // Create a new network
     Network netFromFile;
     // Read structure and paramaters from file
-    netFromFile.read_net("./Net/", "Net");
+    netFromFile.read_net("./NetFolder/", "NetFile");
     // Obtain prediction -- each column is an observation
     std::cout << net.predict(x) << std::endl;
     std::cout << netFromFile.predict(x) - net.predict(x) << std::endl;

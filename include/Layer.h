@@ -3,10 +3,10 @@
 
 #include <Eigen/Core>
 #include <vector>
+#include <map>
 #include "Config.h"
 #include "RNG.h"
 #include "Optimizer.h"
-#include <map>
 
 namespace MiniDNN
 {
@@ -28,13 +28,14 @@ class Layer
     protected:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+        typedef std::map<std::string, int> MetaInfo;
 
         const int m_in_size;  // Size of input units
         const int m_out_size; // Size of output units
 
     public:
         ///
-        /// Constructor
+        /// Constructor.
         ///
         /// \param in_size  Number of input units of this hidden Layer. It must be
         ///                 equal to the number of output units of the previous layer.
@@ -46,7 +47,7 @@ class Layer
         {}
 
         ///
-        /// Virtual destructor
+        /// Virtual destructor.
         ///
         virtual ~Layer() {}
 
@@ -66,7 +67,7 @@ class Layer
         }
 
         ///
-        /// Initialize layer parameters using \f$N(\mu, \sigma^2)\f$ distribution
+        /// Initialize layer parameters using \f$N(\mu, \sigma^2)\f$ distribution.
         ///
         /// \param mu    Mean of the normal distribution.
         /// \param sigma Standard deviation of the normal distribution.
@@ -74,14 +75,14 @@ class Layer
         virtual void init(const Scalar& mu, const Scalar& sigma, RNG& rng) = 0;
 
         ///
-        /// Initialize layer parameters using without distribution, used just when the layer is read from file
+        /// Initialize layer parameters without arguments. It is used when the layer is
+        /// read from file. This function will typically set the sizes of member
+        /// matrices and vectors.
         ///
         virtual void init() = 0;
 
-
-
         ///
-        /// Compute the output of this layer
+        /// Compute the output of this layer.
         ///
         /// The purpose of this function is to let the hidden layer compute information
         /// that will be passed to the next layer as the input. The concrete behavior
@@ -162,27 +163,25 @@ class Layer
         virtual std::vector<Scalar> get_derivatives() const = 0;
 
         ///
-        /// @brief      Return the layer type, useful to export the NN model
-        ///
-        /// @return     Type of the layer
+        /// Return the layer type. It is used to export the NN model.
         ///
         virtual std::string layer_type() const = 0;
 
         ///
-        /// @brief      Return the activation type, useful to export the NN model
-        ///
-        /// @return     Type of the activation type
+        /// Return the activation layer type. It is used to export the NN model.
         ///
         virtual std::string activation_type() const = 0;
 
         ///
-        /// @brief      Fill a map used to export informations to file
+        /// Fill in the meta information of this layer, such as layer type, input
+        /// and output sizes, etc. It is used to export layer to file.
         ///
-        /// @param[in,out]     map_dim  The map, which contains informations of the net
-        /// @param[in]         index    The index, which defines the number of the layer
+        /// \param map   A key-value map that contains the meta information of the NN model.
+        /// \param index The index of this layer in the NN model. It is used to generate
+        ///              the key. For example, the layer may insert {"Layer1": 2},
+        ///              where 1 is the index, "Layer1" is the key, and 2 is the value.
         ///
-        virtual void fill_map (std::map<std::string, int>& map_dim, int index) = 0;
-
+        virtual void fill_meta_info(MetaInfo& map, int index) const = 0;
 };
 
 

@@ -3,12 +3,12 @@
 
 #include <Eigen/Core>
 #include <vector>
-#include <iostream>
 #include <stdexcept>
 #include "../Config.h"
 #include "../Layer.h"
 #include "../Utils/Random.h"
-#include "../Utils/MiniDNNStream.h"
+#include "../Utils/IO.h"
+#include "../Utils/Enum.h"
 
 namespace MiniDNN
 {
@@ -27,6 +27,7 @@ class FullyConnected: public Layer
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
         typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
         typedef Vector::AlignedMapType AlignedMapVec;
+        typedef std::map<std::string, int> MetaInfo;
 
         Matrix m_weight;  // Weight parameters, W(in_size x out_size)
         Vector m_bias;    // Bias parameters, b(out_size x 1)
@@ -35,7 +36,7 @@ class FullyConnected: public Layer
         Matrix m_z;       // Linear term, z = W' * in + b
         Matrix m_a;       // Output of this layer, a = act(z)
         Matrix m_din;     // Derivative of the input of this layer.
-        // Note that input of this layer is also the output of previous layer
+                          // Note that input of this layer is also the output of previous layer
 
     public:
         ///
@@ -50,10 +51,8 @@ class FullyConnected: public Layer
 
         void init(const Scalar& mu, const Scalar& sigma, RNG& rng)
         {
-            m_weight.resize(this->m_in_size, this->m_out_size);
-            m_bias.resize(this->m_out_size);
-            m_dw.resize(this->m_in_size, this->m_out_size);
-            m_db.resize(this->m_out_size);
+            // Set parameter dimension
+            init();
             // Set random coefficients
             internal::set_normal_random(m_weight.data(), m_weight.size(), rng, mu, sigma);
             internal::set_normal_random(m_bias.data(), m_bias.size(), rng, mu, sigma);
@@ -61,6 +60,7 @@ class FullyConnected: public Layer
 
         void init()
         {
+            // Set parameter dimension
             m_weight.resize(this->m_in_size, this->m_out_size);
             m_bias.resize(this->m_out_size);
             m_dw.resize(this->m_in_size, this->m_out_size);
@@ -135,7 +135,7 @@ class FullyConnected: public Layer
         {
             if (static_cast<int>(param.size()) != m_weight.size() + m_bias.size())
             {
-                throw std::invalid_argument("Parameter size does not match");
+                throw std::invalid_argument("[class FullyConnected]: Parameter size does not match");
             }
 
             std::copy(param.begin(), param.begin() + m_weight.size(), m_weight.data());
@@ -161,16 +161,13 @@ class FullyConnected: public Layer
             return Activation::return_type();
         }
 
-        void fill_map (std::map<std::string, int>& netMap, int index)
+        void fill_meta_info(MetaInfo& map, int index) const
         {
-            netMap.insert(std::pair<std::string, int>("Layer" + to_string(index),
-                          MiniDNN::layer_type(layer_type())));
-            netMap.insert(std::pair<std::string, int>("Activation" + to_string(
-                              index), MiniDNN::activation_type(activation_type())));
-            netMap.insert(std::pair<std::string, int>("m_in_size" + to_string(
-                              index), in_size()));
-            netMap.insert(std::pair<std::string, int>("m_out_size" + to_string(
-                              index), out_size()));
+            std::string ind = internal::to_string(index);
+            map.insert(std::make_pair("Layer" + ind, internal::layer_id(layer_type())));
+            map.insert(std::make_pair("Activation" + ind, internal::activation_id(activation_type())));
+            map.insert(std::make_pair("in_size" + ind, in_size()));
+            map.insert(std::make_pair("out_size" + ind, out_size()));
         }
 };
 
