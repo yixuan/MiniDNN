@@ -16,7 +16,6 @@ namespace MiniDNN
 class ReLU
 {
     private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
 
     public:
         // a = activation(z) = max(z, 0)

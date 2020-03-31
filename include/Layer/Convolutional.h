@@ -27,8 +27,6 @@ template <typename Activation>
 class Convolutional: public Layer
 {
     private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
         typedef Matrix::ConstAlignedMapType ConstAlignedMapMat;
         typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
         typedef Vector::AlignedMapType AlignedMapVec;

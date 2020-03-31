@@ -17,7 +17,6 @@ namespace MiniDNN
 class SGD: public Optimizer
 {
     private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
         typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
         typedef Vector::AlignedMapType AlignedMapVec;
 

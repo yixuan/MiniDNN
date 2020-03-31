@@ -23,8 +23,6 @@ template <typename Activation>
 class FullyConnected: public Layer
 {
     private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
         typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
         typedef Vector::AlignedMapType AlignedMapVec;
         typedef std::map<std::string, int> MetaInfo;

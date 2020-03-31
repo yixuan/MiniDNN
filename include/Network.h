@@ -32,7 +32,6 @@ namespace MiniDNN
 class Network
 {
     private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::RowVectorXi IntegerVector;
         typedef std::map<std::string, int> MetaInfo;
 
@@ -437,10 +436,19 @@ class Network
             // We want to force XType and YType to be column-majored
             typedef typename Eigen::MatrixBase<DerivedX>::PlainObject PlainObjectX;
             typedef typename Eigen::MatrixBase<DerivedY>::PlainObject PlainObjectY;
+
+#if (MDNN_ROWMAJOR == 1 )
+            typedef Eigen::Matrix<typename PlainObjectX::Scalar, PlainObjectX::RowsAtCompileTime, PlainObjectX::ColsAtCompileTime, Eigen::RowMajor>
+            XType;
+            typedef Eigen::Matrix<typename PlainObjectY::Scalar, PlainObjectY::RowsAtCompileTime, PlainObjectY::ColsAtCompileTime, Eigen::RowMajor>
+            YType;
+#else
             typedef Eigen::Matrix<typename PlainObjectX::Scalar, PlainObjectX::RowsAtCompileTime, PlainObjectX::ColsAtCompileTime>
             XType;
             typedef Eigen::Matrix<typename PlainObjectY::Scalar, PlainObjectY::RowsAtCompileTime, PlainObjectY::ColsAtCompileTime>
             YType;
+#endif
+
             const int nlayer = num_layers();
 
             if (nlayer <= 0)

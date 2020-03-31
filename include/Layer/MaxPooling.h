@@ -25,7 +25,6 @@ template <typename Activation>
 class MaxPooling: public Layer
 {
     private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::MatrixXi IntMatrix;
         typedef std::map<std::string, int> MetaInfo;
 

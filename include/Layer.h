@@ -26,8 +26,6 @@ namespace MiniDNN
 class Layer
 {
     protected:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
         typedef std::map<std::string, int> MetaInfo;
 
         const int m_in_size;  // Size of input units

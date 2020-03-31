@@ -13,7 +13,6 @@ namespace MiniDNN
 class Softmax
 {
     private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Array<Scalar, 1, Eigen::Dynamic> RowArray;
 
     public:
