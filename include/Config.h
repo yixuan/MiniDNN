@@ -4,6 +4,8 @@
 namespace MiniDNN
 {
 
+typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
 
 // Floating-point number type
 #ifndef MDNN_SCALAR
