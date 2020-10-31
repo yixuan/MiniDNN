@@ -11,8 +11,7 @@
 #include <cstdlib>   // atoi
 
 #ifdef _WIN32
-    //#include <windows.h>  // _mkdir
-    #include <direct.h>     // here _mkdir is living.
+    #include <direct.h>     // _mkdir
 #else
     #include <sys/stat.h> // mkdir
 #endif
