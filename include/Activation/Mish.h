@@ -18,7 +18,6 @@ namespace MiniDNN
 class Mish
 {
     private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
 
     public:
         // Mish(x) = x * tanh(softplus(x))

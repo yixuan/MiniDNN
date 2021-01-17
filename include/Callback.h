@@ -29,7 +29,6 @@ class Network;
 class Callback
 {
     protected:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::RowVectorXi IntegerVector;
 
     public:

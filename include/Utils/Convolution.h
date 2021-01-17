@@ -131,8 +131,8 @@ inline void moving_product(
     const int step,
     const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>&
     mat1,
-    Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& mat2,
-    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& res
+    Eigen::Map< const Matrix >& mat2,
+    Matrix& res
 )
 {
     const int row1 = mat1.rows();
@@ -156,7 +156,6 @@ inline void convolve_valid(
     const Scalar* filter_data,
     Scalar* dest)
 {
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
     RMatrix;
     typedef Eigen::Map<const Matrix> ConstMapMat;
@@ -243,8 +242,8 @@ inline void moving_product(
     const int padding, const int step,
     const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>&
     mat1,
-    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& mat2,
-    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& res
+    const Matrix& mat2,
+    Matrix & res
 )
 {
     const int row1 = mat1.rows();
@@ -294,7 +293,6 @@ inline void convolve_full(
     const Scalar* src, const int n_obs, const Scalar* filter_data,
     Scalar* dest)
 {
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
     RMatrix;
     typedef Eigen::Map<const Matrix> ConstMapMat;

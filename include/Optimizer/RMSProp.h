@@ -18,7 +18,6 @@ namespace MiniDNN
 class RMSProp: public Optimizer
 {
     private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
         typedef Eigen::Array<Scalar, Eigen::Dynamic, 1> Array;
         typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
         typedef Vector::AlignedMapType AlignedMapVec;

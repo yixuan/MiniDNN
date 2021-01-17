@@ -16,7 +16,6 @@ namespace MiniDNN
 class Tanh
 {
     private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
 
     public:
         // a = activation(z) = tanh(z)
