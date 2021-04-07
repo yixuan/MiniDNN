@@ -1,18 +1,23 @@
-#ifndef CONFIG_H_
-#define CONFIG_H_
+#ifndef MINIDNN_CONFIG_H_
+#define MINIDNN_CONFIG_H_
+
+#include <random>
 
 namespace MiniDNN
 {
 
 
 // Floating-point number type
-#ifndef MDNN_SCALAR
-typedef double Scalar;
+#ifndef MINIDNN_SCALAR
+using Scalar = double;
 #else
-typedef MDNN_SCALAR Scalar;
+using Scalar = MINIDNN_SCALAR;
 #endif
+
+// C++11 random number generator
+using RNG = std::mt19937;
 
 
 } // namespace MiniDNN
 
-#endif /* CONFIG_H_ */
+#endif // MINIDNN_CONFIG_H_
