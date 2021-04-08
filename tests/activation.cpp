@@ -2,6 +2,7 @@
 #include <Initializer/Normal.h>  // To generate random numbers
 #include <Activation/ReLU.h>
 #include <Activation/Sigmoid.h>
+#include <Activation/Tanh.h>
 #include "catch.hpp"
 
 using namespace MiniDNN;
@@ -22,6 +23,12 @@ template <>
 inline double act_fun<Sigmoid>(double x)
 {
     return 1.0 / (1.0 + std::exp(-x));
+}
+
+template <>
+inline double act_fun<Tanh>(double x)
+{
+    return std::tanh(x);
 }
 // ===================================================================================
 
@@ -96,4 +103,10 @@ TEST_CASE("Sigmoid activation function", "[sigmoid]")
 {
     Matrix z = test_matrix();
     check_activation<Sigmoid>(z);
+}
+
+TEST_CASE("Tanh activation function", "[tanh]")
+{
+    Matrix z = test_matrix();
+    check_activation<Tanh>(z);
 }
