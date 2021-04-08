@@ -1,8 +1,9 @@
-#ifndef ACTIVATION_SIGMOID_H_
-#define ACTIVATION_SIGMOID_H_
+#ifndef MINIDNN_ACTIVATION_SIGMOID_H_
+#define MINIDNN_ACTIVATION_SIGMOID_H_
 
 #include <Eigen/Core>
 #include "../Config.h"
+#include "../Activation.h"
 
 namespace MiniDNN
 {
@@ -11,40 +12,51 @@ namespace MiniDNN
 ///
 /// \ingroup Activations
 ///
-/// The sigmoid activation function
+/// The sigmoid activation function.
 ///
-class Sigmoid
+class Sigmoid: public Activation
 {
-    private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+private:
+    using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using Activation::m_out;
+    using Activation::m_din;
 
-    public:
-        // a = activation(z) = 1 / (1 + exp(-z))
-        // Z = [z1, ..., zn], A = [a1, ..., an], n observations
-        static inline void activate(const Matrix& Z, Matrix& A)
-        {
-            A.array() = Scalar(1) / (Scalar(1) + (-Z.array()).exp());
-        }
+public:
+    // a = f(z) = 1 / (1 + exp(-z))
+    // Z = [z1, ..., zn], A = [a1, ..., an], n observations
+    // Z => prev_layer_data [d x n]
+    // A => m_out [d x n]
+    void forward(const Matrix& prev_layer_data) override
+    {
+        // Alias for brevity
+        const Matrix& z = prev_layer_data;
+        m_out.resize(z.rows(), z.cols());
+        m_out.array() = Scalar(1) / (Scalar(1) + (-z.array()).exp());
+    }
 
-        // Apply the Jacobian matrix J to a vector f
-        // J = d_a / d_z = diag(a .* (1 - a))
-        // g = J * f = a .* (1 - a) .* f
-        // Z = [z1, ..., zn], G = [g1, ..., gn], F = [f1, ..., fn]
-        // Note: When entering this function, Z and G may point to the same matrix
-        static inline void apply_jacobian(const Matrix& Z, const Matrix& A,
-                                          const Matrix& F, Matrix& G)
-        {
-            G.array() = A.array() * (Scalar(1) - A.array()) * F.array();
-        }
+    // dl/dZ = dl/dA .* f'(Z)
+    // f'(z) = a * (1 - a), a = f(z)
+    // Z     => prev_layer_data [d x n]
+    // dl/dA => next_layer_data [d x n]
+    // dl/dZ => m_din [d x n]
+    void backprop(const Matrix& prev_layer_data, const Matrix& next_layer_data) override
+    {
+        // Aliases for brevity
+        const Matrix& z = prev_layer_data;
+        const Matrix& a = m_out;
+        const Matrix& dlda = next_layer_data;
+        m_din.resize(dlda.rows(), dlda.cols());
+        m_din.array() = a.array() * (Scalar(1) - a.array()) * dlda.array();
+    }
 
-        static std::string return_type()
-        {
-            return "Sigmoid";
-        }
+    std::string layer_type() const override
+    {
+        return "Sigmoid";
+    }
 };
 
 
 } // namespace MiniDNN
 
 
-#endif /* ACTIVATION_SIGMOID_H_ */
+#endif // MINIDNN_ACTIVATION_SIGMOID_H_

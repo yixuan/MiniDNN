@@ -1,6 +1,7 @@
 #include <Eigen/Core>
 #include <Initializer/Normal.h>  // To generate random numbers
 #include <Activation/ReLU.h>
+#include <Activation/Sigmoid.h>
 #include "catch.hpp"
 
 using namespace MiniDNN;
@@ -15,6 +16,12 @@ template <>
 inline double act_fun<ReLU>(double x)
 {
     return std::max(x, 0.0);
+}
+
+template <>
+inline double act_fun<Sigmoid>(double x)
+{
+    return 1.0 / (1.0 + std::exp(-x));
 }
 // ===================================================================================
 
@@ -83,4 +90,10 @@ TEST_CASE("ReLU activation function", "[relu]")
 {
     Matrix z = test_matrix();
     check_activation<ReLU>(z);
+}
+
+TEST_CASE("Sigmoid activation function", "[sigmoid]")
+{
+    Matrix z = test_matrix();
+    check_activation<Sigmoid>(z);
 }

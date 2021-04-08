@@ -28,8 +28,10 @@ public:
     // A => m_out [d x n]
     void forward(const Matrix& prev_layer_data) override
     {
-        m_out.resize(prev_layer_data.rows(), prev_layer_data.cols());
-        m_out.array() = prev_layer_data.array().cwiseMax(Scalar(0));
+        // Alias for brevity
+        const Matrix& z = prev_layer_data;
+        m_out.resize(z.rows(), z.cols());
+        m_out.array() = z.array().cwiseMax(Scalar(0));
     }
 
     // dl/dZ = dl/dA .* f'(Z)
@@ -40,8 +42,11 @@ public:
     // dl/dZ => m_din [d x n]
     void backprop(const Matrix& prev_layer_data, const Matrix& next_layer_data) override
     {
-        m_din.resize(next_layer_data.rows(), next_layer_data.cols());
-        m_din.array() = (prev_layer_data.array() > Scalar(0)).select(next_layer_data, Scalar(0));
+        // Aliases for brevity
+        const Matrix& z = prev_layer_data;
+        const Matrix& dlda = next_layer_data;
+        m_din.resize(dlda.rows(), dlda.cols());
+        m_din.array() = (z.array() > Scalar(0)).select(dlda, Scalar(0));
     }
 
     std::string layer_type() const override
