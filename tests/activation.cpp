@@ -4,6 +4,7 @@
 #include <Activation/ReLU.h>
 #include <Activation/Sigmoid.h>
 #include <Activation/Tanh.h>
+#include <Activation/Softmax.h>
 #include "catch.hpp"
 
 using namespace MiniDNN;
@@ -122,4 +123,59 @@ TEST_CASE("Tanh activation function", "[tanh]")
 {
     Matrix z = test_matrix();
     check_activation<Tanh>(z);
+}
+
+// Softmax is special
+TEST_CASE("Softmax activation function", "[softmax]")
+{
+    const Scalar tol = 1e-12;
+    Matrix z = test_matrix();
+    const int d = z.rows();
+    const int n = z.cols();
+    INFO("\nInput matrix:\n" << z);
+
+    // Forward pass, a = f(z)
+    Softmax act;
+    act.forward(z);
+    const Matrix& a = act.output();
+    INFO("\nActivated matrix:\n" << a);
+
+    // Compute the forward result using the scalar version
+    Matrix a_true = z.array().exp().matrix();
+    for(int j = 0; j < n; j++)
+    {
+        double colsum = a_true.col(j).sum();
+        a_true.col(j) /= colsum;
+    }
+
+    REQUIRE((a - a_true).cwiseAbs().maxCoeff() == Approx(0.0).margin(tol));
+
+    // l = sum(a[i, j]^2)
+    // dl/da = 2*a
+    Matrix dlda = 2.0 * a;
+    act.backprop(z, dlda);
+    const Matrix& dldz = act.backprop_data();
+    INFO("\nGradient of input:\n" << dldz);
+
+    // Compute the gradient using numerical differentiation
+    Matrix dldz_approx(d, n);
+    const double eps = 1e-6;
+    for(int j = 0; j < n; j++)
+    {
+        for(int i = 0; i < d; i++)
+        {
+            Matrix z1 = z, z2 = z;
+            z1(i, j) -= eps;
+            z2(i, j) += eps;
+            act.forward(z1);
+            const Matrix& a1 = act.output();
+            const double f1 = a1.cwiseAbs2().sum();
+            act.forward(z2);
+            const Matrix& a2 = act.output();
+            const double f2 = a2.cwiseAbs2().sum();
+            dldz_approx(i, j) = 0.5 * (f2 - f1) / eps;
+        }
+    }
+
+    REQUIRE((dldz - dldz_approx).cwiseAbs().maxCoeff() == Approx(0.0).margin(std::sqrt(tol)));
 }

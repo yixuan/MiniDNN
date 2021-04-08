@@ -1,5 +1,5 @@
-#ifndef ACTIVATION_SOFTMAX_H_
-#define ACTIVATION_SOFTMAX_H_
+#ifndef MINIDNN_ACTIVATION_SOFTMAX_H_
+#define MINIDNN_ACTIVATION_SOFTMAX_H_
 
 namespace MiniDNN
 {
@@ -8,44 +8,60 @@ namespace MiniDNN
 ///
 /// \ingroup Activations
 ///
-/// The softmax activation function
+/// The softmax activation function.
 ///
-class Softmax
+class Softmax: public Activation
 {
-    private:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-        typedef Eigen::Array<Scalar, 1, Eigen::Dynamic> RowArray;
+private:
+    using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using RowArray = Eigen::Array<Scalar, 1, Eigen::Dynamic>;
+    using Activation::m_out;
+    using Activation::m_din;
 
-    public:
-        // a = activation(z) = softmax(z)
-        // Z = [z1, ..., zn], A = [a1, ..., an], n observations
-        static inline void activate(const Matrix& Z, Matrix& A)
-        {
-            A.array() = (Z.rowwise() - Z.colwise().maxCoeff()).array().exp();
-            RowArray colsums = A.colwise().sum();
-            A.array().rowwise() /= colsums;
-        }
+public:
+    // a = f(z) = softmax(z)
+    // Z = [z1, ..., zn], A = [a1, ..., an], n observations
+    // Z => prev_layer_data [d x n]
+    // A => m_out [d x n]
+    void forward(const Matrix& prev_layer_data) override
+    {
+        // Alias for brevity
+        const Matrix& z = prev_layer_data;
+        m_out.resize(z.rows(), z.cols());
+        m_out.array() = z.array().cwiseMax(Scalar(0));
 
-        // Apply the Jacobian matrix J to a vector f
-        // J = d_a / d_z = diag(a) - a * a'
-        // g = J * f = a .* f - a * (a' * f) = a .* (f - a'f)
-        // Z = [z1, ..., zn], G = [g1, ..., gn], F = [f1, ..., fn]
-        // Note: When entering this function, Z and G may point to the same matrix
-        static inline void apply_jacobian(const Matrix& Z, const Matrix& A,
-                                          const Matrix& F, Matrix& G)
-        {
-            RowArray a_dot_f = A.cwiseProduct(F).colwise().sum();
-            G.array() = A.array() * (F.array().rowwise() - a_dot_f);
-        }
+        m_out.array() = (z.rowwise() - z.colwise().maxCoeff()).array().exp();
+        RowArray colsums = m_out.colwise().sum();
+        m_out.array().rowwise() /= colsums;
+    }
 
-        static std::string return_type()
-        {
-            return "Softmax";
-        }
+    // dl/dz = J * dl/da, for each vector pair (z, a)
+    // J = da/dz = diag(a) - a * a'
+    // J * dl/da = a .* dl/da - a * (a' * dl/da) = a .* (dl/da - a'(dl/da))
+    // dl/dZ = dl/dA .* (dl/dA - [a'(dl/da)])
+    // Z     => prev_layer_data [d x n]
+    // dl/dA => next_layer_data [d x n]
+    // dl/dZ => m_din [d x n]
+    void backprop(const Matrix& prev_layer_data, const Matrix& next_layer_data) override
+    {
+        // Aliases for brevity
+        const Matrix& z = prev_layer_data;
+        const Matrix& a = m_out;
+        const Matrix& dlda = next_layer_data;
+        m_din.resize(dlda.rows(), dlda.cols());
+
+        RowArray a_dot_dlda = a.cwiseProduct(dlda).colwise().sum();
+        m_din.array() = a.array() * (dlda.array().rowwise() - a_dot_dlda);
+    }
+
+    std::string layer_type() const override
+    {
+        return "Softmax";
+    }
 };
 
 
 } // namespace MiniDNN
 
 
-#endif /* ACTIVATION_SOFTMAX_H_ */
+#endif // MINIDNN_ACTIVATION_SOFTMAX_H_
