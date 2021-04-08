@@ -15,7 +15,7 @@ namespace MiniDNN
 ///
 /// Initialize parameters using uniform distribution.
 ///
-class Uniform: Initializer
+class Uniform: public Initializer
 {
 private:
     using Index = Eigen::Index;

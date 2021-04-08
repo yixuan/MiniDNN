@@ -5,8 +5,10 @@
 #include <vector>
 #include <map>
 #include "Config.h"
-#include "RNG.h"
+#include "Initializer.h"
 #include "Optimizer.h"
+#include "Utils/IO.h"
+#include "Utils/Enum.h"
 
 namespace MiniDNN
 {
@@ -67,12 +69,12 @@ public:
     }
 
     ///
-    /// Initialize layer parameters using \f$N(\mu, \sigma^2)\f$ distribution.
+    /// Initialize layer parameters using the given initializer.
     ///
-    /// \param mu    Mean of the normal distribution.
-    /// \param sigma Standard deviation of the normal distribution.
-    /// \param rng   The random number generator of type RNG.
-    virtual void init(const Scalar& mu, const Scalar& sigma, RNG& rng) = 0;
+    /// \param initializer The initializer. See the Initializer class.
+    /// \param rng         The random number generator.
+    ///
+    virtual void init(const Initializer& initializer, RNG& rng) = 0;
 
     ///
     /// Initialize layer parameters without arguments. It is used when the layer is
@@ -168,11 +170,6 @@ public:
     virtual std::string layer_type() const = 0;
 
     ///
-    /// Return the activation layer type. It is used to export the NN model.
-    ///
-    virtual std::string activation_type() const = 0;
-
-    ///
     /// Fill in the meta information of this layer, such as layer type, input
     /// and output sizes, etc. It is used to export layer to file.
     ///
@@ -181,7 +178,13 @@ public:
     ///              the key. For example, the layer may insert {"Layer1": 2},
     ///              where 1 is the index, "Layer1" is the key, and 2 is the value.
     ///
-    virtual void fill_meta_info(MetaInfo& map, int index) const = 0;
+    virtual void fill_meta_info(MetaInfo& map, int index) const
+    {
+        std::string ind = internal::to_string(index);
+        map.insert(std::make_pair("Layer" + ind, internal::layer_id(layer_type())));
+        map.insert(std::make_pair("in_size" + ind, in_size()));
+        map.insert(std::make_pair("out_size" + ind, out_size()));
+    }
 };
 
 
