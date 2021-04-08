@@ -1,5 +1,6 @@
 #include <Eigen/Core>
 #include <Initializer/Normal.h>  // To generate random numbers
+#include <Activation/Mish.h>
 #include <Activation/ReLU.h>
 #include <Activation/Sigmoid.h>
 #include <Activation/Tanh.h>
@@ -29,6 +30,12 @@ template <>
 inline double act_fun<Tanh>(double x)
 {
     return std::tanh(x);
+}
+
+template <>
+inline double act_fun<Mish>(double x)
+{
+    return x * std::tanh(std::log(1.0 + std::exp(x)));
 }
 // ===================================================================================
 
@@ -91,6 +98,12 @@ void check_activation(const Matrix& z, Scalar tol = Scalar(1e-12))
     }
 
     REQUIRE((dldz - dldz_approx).cwiseAbs().maxCoeff() == Approx(0.0).margin(std::sqrt(tol)));
+}
+
+TEST_CASE("Mish activation function", "[mish]")
+{
+    Matrix z = test_matrix();
+    check_activation<Mish>(z);
 }
 
 TEST_CASE("ReLU activation function", "[relu]")
