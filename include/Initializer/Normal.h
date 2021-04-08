@@ -13,7 +13,7 @@ namespace MiniDNN
 ///
 /// \ingroup Initializer
 ///
-/// Initialize parameters using normal distribution
+/// Initialize parameters using normal distribution.
 ///
 class Normal: Initializer
 {
@@ -26,22 +26,22 @@ private:
 
 public:
     ///
-    /// Constructor for a N(mu, sigma^2) distribution initializer
+    /// Constructor for a N(mu, sigma^2) distribution initializer.
     ///
     Normal(Scalar mu = Scalar(0), Scalar sigma = Scalar(0.1)) :
         m_mu(mu), m_sigma(sigma)
     {}
 
     ///
-    /// Initialize the given matrix or vector with a N(mu, sigma^2) distribution
+    /// Initialize the given matrix or vector with a N(mu, sigma^2) distribution.
     ///
-    void initialize(GenericMatrix mat, RNG& rng)
+    void initialize(GenericMatrix mat, RNG& rng) const override
     {
         std::normal_distribution<Scalar> normal(m_mu, m_sigma);
-        Scalar* start = mat.data();
+        Scalar* data = mat.data();
         Index len = mat.size();
         for (Index i = 0; i < len; i++)
-            start[i] = normal(rng);
+            data[i] = normal(rng);
     };
 };
 

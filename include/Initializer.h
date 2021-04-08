@@ -15,7 +15,7 @@ namespace MiniDNN
 ///
 /// \ingroup Initializer
 ///
-/// The interface of initialization methods
+/// The interface of initialization methods.
 ///
 class Initializer
 {
@@ -30,9 +30,9 @@ public:
     virtual ~Initializer() {}
 
     ///
-    /// Initialize the given matrix or vector
+    /// Initialize the given matrix or vector.
     ///
-    virtual void initialize(GenericMatrix mat, RNG& rng) = 0;
+    virtual void initialize(GenericMatrix mat, RNG& rng) const = 0;
 };
 
 
