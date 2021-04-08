@@ -25,10 +25,16 @@ private:
     const Scalar m_b;
 
 public:
+    ///
+    /// Constructor for a Unif(a, b) distribution initializer
+    ///
     Uniform(Scalar a = Scalar(0), Scalar b = Scalar(1)) :
         m_a(std::min(a, b)), m_b(std::max(a, b))
     {}
 
+    ///
+    /// Initialize the given matrix or vector with a Unif(a, b) distribution
+    ///
     void initialize(GenericMatrix mat, RNG& rng)
     {
         std::uniform_real_distribution<Scalar> unif(m_a, m_b);

@@ -25,10 +25,16 @@ private:
     const Scalar m_sigma;
 
 public:
+    ///
+    /// Constructor for a N(mu, sigma^2) distribution initializer
+    ///
     Normal(Scalar mu = Scalar(0), Scalar sigma = Scalar(0.1)) :
         m_mu(mu), m_sigma(sigma)
     {}
 
+    ///
+    /// Initialize the given matrix or vector with a N(mu, sigma^2) distribution
+    ///
     void initialize(GenericMatrix mat, RNG& rng)
     {
         std::normal_distribution<Scalar> normal(m_mu, m_sigma);

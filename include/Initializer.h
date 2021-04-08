@@ -24,8 +24,14 @@ protected:
     using GenericMatrix = Eigen::Ref<Matrix>;
 
 public:
+    ///
+    /// Virtual destructor.
+    ///
     virtual ~Initializer() {}
 
+    ///
+    /// Initialize the given matrix or vector
+    ///
     virtual void initialize(GenericMatrix mat, RNG& rng) = 0;
 };
 
