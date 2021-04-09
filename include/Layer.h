@@ -131,8 +131,7 @@ public:
     ///                        `out_size` rows as in the constructor, and the same
     ///                        number of columns as `prev_layer_data`.
     ///
-    virtual void backprop(const Matrix& prev_layer_data,
-                          const Matrix& next_layer_data) = 0;
+    virtual void backprop(const Matrix& prev_layer_data, const Matrix& next_layer_data) = 0;
 
     ///
     /// Obtain the gradient of input units of this layer
@@ -157,7 +156,7 @@ public:
     ///
     /// Set the values of layer parameters from serialized data
     ///
-    virtual void set_parameters(const std::vector<Scalar>& param) {};
+    virtual void set_parameters(const std::vector<Scalar>& param) {}
 
     ///
     /// Get serialized values of the gradient of parameters

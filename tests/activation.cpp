@@ -154,7 +154,7 @@ TEST_CASE("Softmax activation function", "[softmax]")
     // dl/da = 2*a
     Matrix dlda = 2.0 * a;
     act.backprop(z, dlda);
-    const Matrix& dldz = act.backprop_data();
+    const Matrix dldz = act.backprop_data();
     INFO("\nGradient of input:\n" << dldz);
 
     // Compute the gradient using numerical differentiation
