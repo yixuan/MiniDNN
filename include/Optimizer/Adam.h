@@ -19,7 +19,6 @@ class Adam: public Optimizer
 {
 private:
     using Array = Eigen::Array<Scalar, Eigen::Dynamic, 1>;
-    using Optimizer::Vector;
     using Optimizer::ConstAlignedMapVec;
     using Optimizer::AlignedMapVec;
 

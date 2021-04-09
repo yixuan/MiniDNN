@@ -17,7 +17,6 @@ namespace MiniDNN
 class SGD: public Optimizer
 {
 private:
-    using Optimizer::Vector;
     using Optimizer::ConstAlignedMapVec;
     using Optimizer::AlignedMapVec;
 
