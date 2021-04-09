@@ -1,5 +1,5 @@
-#ifndef OPTIMIZER_H_
-#define OPTIMIZER_H_
+#ifndef MINIDNN_OPTIMIZER_H_
+#define MINIDNN_OPTIMIZER_H_
 
 #include <Eigen/Core>
 #include "Config.h"
@@ -15,39 +15,42 @@ namespace MiniDNN
 ///
 /// \ingroup Optimizers
 ///
-/// The interface of optimization algorithms
+/// The interface of optimization algorithms.
 ///
 class Optimizer
 {
-    protected:
-        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-        typedef Vector::ConstAlignedMapType ConstAlignedMapVec;
-        typedef Vector::AlignedMapType AlignedMapVec;
+protected:
+    using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+    using ConstAlignedMapVec = Vector::ConstAlignedMapType;
+    using AlignedMapVec = Vector::AlignedMapType;
 
-    public:
-        virtual ~Optimizer() {}
+public:
+    ///
+    /// Virtual destructor.
+    ///
+    virtual ~Optimizer() {}
 
-        ///
-        /// Reset the optimizer to clear all historical information
-        ///
-        virtual void reset() {};
+    ///
+    /// Reset the optimizer to clear all historical information.
+    ///
+    virtual void reset() {};
 
-        ///
-        /// Update the parameter vector using its gradient
-        ///
-        /// It is assumed that the memory addresses of `dvec` and `vec` do not
-        /// change during the training process. This is used to implement optimization
-        /// algorithms that have "memories". See the AdaGrad algorithm for an example.
-        ///
-        /// \param dvec The gradient of the parameter. Read-only
-        /// \param vec  On entering, the current parameter vector. On exit, the
-        ///             updated parameters.
-        ///
-        virtual void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec) = 0;
+    ///
+    /// Update the parameter vector using its gradient.
+    ///
+    /// It is assumed that the memory addresses of `dvec` and `vec` do not
+    /// change during the training process. This is used to implement optimization
+    /// algorithms that have "memories". See the AdaGrad algorithm for an example.
+    ///
+    /// \param dvec The gradient of the parameter. Read-only.
+    /// \param vec  On entering, the current parameter vector. On exit, the
+    ///             updated parameters.
+    ///
+    virtual void update(ConstAlignedMapVec& dvec, AlignedMapVec& vec) = 0;
 };
 
 
 } // namespace MiniDNN
 
 
-#endif /* OPTIMIZER_H_ */
+#endif // MINIDNN_OPTIMIZER_H_
