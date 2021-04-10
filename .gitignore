@@ -1,9 +1,11 @@
 doc/*
 Debug/*
 Release/*
+include/Eigen/*
 .cproject
 .project
 .settings/*
 *.orig
 *.o
 *.out
+
