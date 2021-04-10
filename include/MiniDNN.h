@@ -5,14 +5,15 @@
 
 #include "Config.h"
 
-#include "RNG.h"
+#include "Initializer.h"
+#include "Initializer/Normal.h"
+#include "Initializer/Uniform.h"
 
 #include "Layer.h"
 #include "Layer/FullyConnected.h"
 #include "Layer/Convolutional.h"
 #include "Layer/MaxPooling.h"
 
-#include "Activation/Identity.h"
 #include "Activation/ReLU.h"
 #include "Activation/Sigmoid.h"
 #include "Activation/Softmax.h"
@@ -36,4 +37,4 @@
 #include "Network.h"
 
 
-#endif /* MINIDNN_H_ */
+#endif // MINIDNN_H_

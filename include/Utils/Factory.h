@@ -13,7 +13,6 @@
 #include "../Layer/Convolutional.h"
 #include "../Layer/MaxPooling.h"
 
-#include "../Activation/Identity.h"
 #include "../Activation/ReLU.h"
 #include "../Activation/Sigmoid.h"
 #include "../Activation/Softmax.h"
