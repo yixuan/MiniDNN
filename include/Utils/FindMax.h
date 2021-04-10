@@ -1,5 +1,5 @@
-#ifndef UTILS_FINDMAX_H_
-#define UTILS_FINDMAX_H_
+#ifndef MINIDNN_UTILS_FINDMAX_H_
+#define MINIDNN_UTILS_FINDMAX_H_
 
 #include "../Config.h"
 
@@ -16,7 +16,7 @@ namespace internal
 template <int N>
 inline int find_max(const Scalar* x)
 {
-    const int loc = find_max < N - 1 > (x);
+    const int loc = find_max<N - 1> (x);
     return (x[N - 1] > x[loc]) ? (N - 1) : loc;
 }
 
@@ -31,17 +31,17 @@ inline int find_max(const Scalar* x, const int n)
 {
     switch (n)
     {
-        case 2:
-            return find_max<2>(x);
+    case 2:
+        return find_max<2>(x);
 
-        case 3:
-            return find_max<3>(x);
+    case 3:
+        return find_max<3>(x);
 
-        case 4:
-            return find_max<4>(x);
+    case 4:
+        return find_max<4>(x);
 
-        case 5:
-            return find_max<5>(x);
+    case 5:
+        return find_max<5>(x);
     }
 
     int loc = find_max<6>(x);
@@ -150,4 +150,4 @@ inline Scalar find_block_max(const Scalar* x, const int nrow, const int ncol,
 } // namespace MiniDNN
 
 
-#endif /* UTILS_FINDMAX_H_ */
+#endif // MINIDNN_UTILS_FINDMAX_H_
