@@ -46,12 +46,12 @@ public:
     virtual ~Callback() {}
 
     // Before training a mini-batch
-    virtual void pre_training_batch(const Network* net, const Matrix& x, const Matrix& y) {}
-    virtual void pre_training_batch(const Network* net, const Matrix& x, const IntegerVector& y) {}
+    virtual void pre_training_batch(const Network& net, const Matrix& x, const Matrix& y) {}
+    virtual void pre_training_batch(const Network& net, const Matrix& x, const IntegerVector& y) {}
 
     // After a mini-batch is trained
-    virtual void post_training_batch(const Network* net, const Matrix& x, const Matrix& y) {}
-    virtual void post_training_batch(const Network* net, const Matrix& x, const IntegerVector& y) {}
+    virtual void post_training_batch(const Network& net, const Matrix& x, const Matrix& y) {}
+    virtual void post_training_batch(const Network& net, const Matrix& x, const IntegerVector& y) {}
 };
 
 

@@ -11,6 +11,7 @@
 #include "Layer.h"
 #include "Output.h"
 #include "Callback.h"
+#include "Utils/Random.h"
 #include "Utils/IO.h"
 #include "Utils/Factory.h"
 
@@ -99,8 +100,8 @@ private:
             return;
 
         using LayerPtr = std::unique_ptr<Layer>;
-        LayerPtr first_layer = m_layers[0];
-        LayerPtr last_layer = m_layers[nlayer - 1];
+        LayerPtr& first_layer = m_layers[0];
+        LayerPtr& last_layer = m_layers[nlayer - 1];
         // Let output layer compute back-propagation data
         m_output->check_target_data(target);
         m_output->evaluate(last_layer->output(), target);
@@ -174,7 +175,7 @@ public:
     ///              If layer is an lvalue, it will be copied; if it is an rvalue,
     ///              it will be moved into the network object.
     ///
-    template <T>
+    template <typename T>
     void add_layer(T&& layer)
     {
         using LayerType = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
@@ -189,11 +190,11 @@ public:
     ///               If output is an lvalue, it will be copied; if it is an rvalue,
     ///               it will be moved into the network object.
     ///
-    template <T>
+    template <typename T>
     void set_output(T&& output)
     {
         using OutputType = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
-        m_output.set(new OutputType(std::forward<T>(output)));
+        m_output.reset(new OutputType(std::forward<T>(output)));
     }
 
     ///
@@ -232,7 +233,7 @@ public:
     ///                 If callback is an lvalue, it will be copied; if it is an rvalue,
     ///                 it will be moved into the network object.
     ///
-    template <T>
+    template <typename T>
     void set_callback(T&& callback)
     {
         using CallBackType = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
@@ -352,11 +353,11 @@ public:
             for (int i = 0; i < nbatch; i++)
             {
                 m_callback->m_batch_id = i;
-                m_callback->pre_training_batch(this, x_batches[i], y_batches[i]);
+                m_callback->pre_training_batch(*this, x_batches[i], y_batches[i]);
                 this->forward(x_batches[i]);
                 this->backprop(x_batches[i], y_batches[i]);
                 this->update(opt);
-                m_callback->post_training_batch(this, x_batches[i], y_batches[i]);
+                m_callback->post_training_batch(*this, x_batches[i], y_batches[i]);
             }
         }
 

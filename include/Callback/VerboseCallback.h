@@ -19,15 +19,15 @@ namespace MiniDNN
 class VerboseCallback: public Callback
 {
 public:
-    void post_training_batch(const Network* net, const Matrix& x, const Matrix& y) override
+    void post_training_batch(const Network& net, const Matrix& x, const Matrix& y) override
     {
-        const Scalar loss = net->get_output()->loss();
+        const Scalar loss = net.get_output().loss();
         std::cout << "[Epoch " << m_epoch_id << ", batch " << m_batch_id << "] Loss = " << loss << std::endl;
     }
 
-    void post_training_batch(const Network* net, const Matrix& x, const IntegerVector& y) override
+    void post_training_batch(const Network& net, const Matrix& x, const IntegerVector& y) override
     {
-        Scalar loss = net->get_output()->loss();
+        Scalar loss = net.get_output().loss();
         std::cout << "[Epoch " << m_epoch_id << ", batch " << m_batch_id << "] Loss = " << loss << std::endl;
     }
 };
