@@ -3,7 +3,6 @@
 
 #include <Eigen/Core>
 #include "../Config.h"
-#include "../RNG.h"
 
 namespace MiniDNN
 {
@@ -11,20 +10,6 @@ namespace MiniDNN
 namespace internal
 {
 
-
-// Shuffle the integer array
-inline void shuffle(int* arr, const int n, RNG& rng)
-{
-    for (int i = n - 1; i > 0; i--)
-    {
-        // A random non-negative integer <= i
-        const int j = int(rng.rand() * (i + 1));
-        // Swap arr[i] and arr[j]
-        const int tmp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = tmp;
-    }
-}
 
 template <typename DerivedX, typename DerivedY, typename XType, typename YType>
 inline int create_shuffled_batches(
@@ -44,7 +29,7 @@ inline int create_shuffled_batches(
 
     // Randomly shuffle the IDs
     Eigen::VectorXi id = Eigen::VectorXi::LinSpaced(nobs, 0, nobs - 1);
-    shuffle(id.data(), id.size(), rng);
+    std::shuffle(id.data(), id.data() + id.size(), rng);
 
     // Compute batch size
     if (batch_size > nobs)
@@ -76,30 +61,6 @@ inline int create_shuffled_batches(
     }
 
     return nbatch;
-}
-
-// Fill array with N(mu, sigma^2) random numbers
-inline void set_normal_random(Scalar* arr, const int n, RNG& rng,
-                              const Scalar& mu = Scalar(0),
-                              const Scalar& sigma = Scalar(1))
-{
-    // For simplicity we use Box-Muller transform to generate normal random variates
-    const double two_pi = 6.283185307179586476925286766559;
-
-    for (int i = 0; i < n - 1; i += 2)
-    {
-        const double t1 = sigma * std::sqrt(-2 * std::log(rng.rand()));
-        const double t2 = two_pi * rng.rand();
-        arr[i]     = t1 * std::cos(t2) + mu;
-        arr[i + 1] = t1 * std::sin(t2) + mu;
-    }
-
-    if (n % 2 == 1)
-    {
-        const double t1 = sigma * std::sqrt(-2 * std::log(rng.rand()));
-        const double t2 = two_pi * rng.rand();
-        arr[n - 1] = t1 * std::cos(t2) + mu;
-    }
 }
 
 
