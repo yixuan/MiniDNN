@@ -315,9 +315,7 @@ public:
     /// \param x          The predictors. Each column is an observation.
     /// \param y          The response variable. Each column is an observation.
     /// \param batch_size Mini-batch size.
-    /// \param epoch      Number of epochs of training.
-    /// \param seed       Set the random seed of the %RNG if `seed > 0`, otherwise
-    ///                   use the current random state.
+    /// \param nepoch     Number of epochs of training.
     ///
     template <typename DerivedX, typename DerivedY>
     bool fit(Optimizer& opt, const Eigen::MatrixBase<DerivedX>& x, const Eigen::MatrixBase<DerivedY>& y,
