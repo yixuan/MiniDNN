@@ -11,7 +11,7 @@
 #include "Layer.h"
 #include "Output.h"
 #include "Callback.h"
-#include "Utils/Random.h"
+#include "Utils/Shuffle.h"
 #include "Utils/IO.h"
 #include "Utils/Factory.h"
 
@@ -321,7 +321,7 @@ public:
     ///
     template <typename DerivedX, typename DerivedY>
     bool fit(Optimizer& opt, const Eigen::MatrixBase<DerivedX>& x, const Eigen::MatrixBase<DerivedY>& y,
-             int batch_size, int epoch)
+             int batch_size, int nepoch)
     {
         // We do not directly use PlainObjectX since it may be row-majored if x is passed as mat.transpose()
         // We want to force XType and YType to be column-majored
@@ -334,30 +334,38 @@ public:
         if (nlayer <= 0)
             return false;
 
+        const int nobs = x.cols();
+        if (y.cols() != nobs)
+            throw std::invalid_argument("[class Network]: The numbers of observations in x and y do not match");
+
         // Reset optimizer
         opt.reset();
 
-        std::vector<XType> x_batches;
-        std::vector<YType> y_batches;
-        const int nbatch = internal::create_shuffled_batches(x, y, batch_size, m_rng, x_batches, y_batches);
         // Set up callback parameters
-        m_callback->m_nbatch = nbatch;
-        m_callback->m_nepoch = epoch;
+        m_callback->m_nepoch = nepoch;
+
+        // Shuffled IDs of observations, will be rearranged in each epoch
+        std::vector<Eigen::VectorXi> ids;
 
         // Iterations on the whole data set
-        for (int k = 0; k < epoch; k++)
+        for (int k = 0; k < nepoch; k++)
         {
+            const int nbatch = internal::create_shuffled_indices(nobs, batch_size, ids, m_rng);
+            m_callback->m_nbatch = nbatch;
             m_callback->m_epoch_id = k;
 
             // Train on each mini-batch
             for (int i = 0; i < nbatch; i++)
             {
+                XType xbatch = internal::subset_data<XType>(x, ids[i]);
+                YType ybatch = internal::subset_data<YType>(y, ids[i]);
+
                 m_callback->m_batch_id = i;
-                m_callback->pre_training_batch(*this, x_batches[i], y_batches[i]);
-                this->forward(x_batches[i]);
-                this->backprop(x_batches[i], y_batches[i]);
+                m_callback->pre_training_batch(*this, xbatch, ybatch);
+                this->forward(xbatch);
+                this->backprop(xbatch, ybatch);
                 this->update(opt);
-                m_callback->post_training_batch(*this, x_batches[i], y_batches[i]);
+                m_callback->post_training_batch(*this, xbatch, ybatch);
             }
         }
 
