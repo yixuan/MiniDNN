@@ -21,8 +21,7 @@ Matrix test_matrix()
     return z;
 }
 
-// Softmax is special
-TEST_CASE("Softmax activation function", "[softmax]")
+TEST_CASE("Fully-connected layer", "[fc]")
 {
     const Scalar tol = 1e-12;
     Matrix x = test_matrix();
