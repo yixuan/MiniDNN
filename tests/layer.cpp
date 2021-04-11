@@ -1,17 +1,16 @@
 #include <Eigen/Core>
 #include <Initializer/Normal.h>  // To generate random numbers
 #include <Layer/FullyConnected.h>
+#include <Layer/MaxPooling.h>
 #include "catch.hpp"
 
 using namespace MiniDNN;
 using Matrix = Eigen::MatrixXd;
 using Vector = Eigen::VectorXd;
 
-Matrix test_matrix()
+Matrix test_matrix(int d, int n)
 {
     // Input matrix
-    const int d = 3;
-    const int n = 5;
     Matrix z(d, n);
 
     // Initialize z with a normal distribution
@@ -21,17 +20,12 @@ Matrix test_matrix()
     return z;
 }
 
-TEST_CASE("Fully-connected layer", "[fc]")
+template <typename LayerType>
+void check_layer(const Matrix& x, LayerType& layer, Scalar tol = Scalar(1e-12))
 {
-    const Scalar tol = 1e-12;
-    Matrix x = test_matrix();
     const int d = x.rows();
     const int n = x.cols();
     INFO("\nInput matrix:\n" << x);
-
-    // Fully-connected layer
-    const int p = 2 * d;
-    FullyConnected layer(d, p);
 
     // Initialize parameters
     Normal init(0.0, 1.0);
@@ -79,6 +73,10 @@ TEST_CASE("Fully-connected layer", "[fc]")
 
     REQUIRE((dldx - dldx_approx).cwiseAbs().maxCoeff() == Approx(0.0).margin(10 * eps));
 
+    // Early return if the tested layer has no parameters
+    if (nparam < 1)
+        return;
+
     // Compute the gradient of parameters using numerical differentiation
     Vector dldparam_approx(nparam);
     std::vector<double> param_eps(param);
@@ -101,4 +99,29 @@ TEST_CASE("Fully-connected layer", "[fc]")
 
     Eigen::Map<Vector> dldparam_v(&dldparam[0], nparam);
     REQUIRE((dldparam_v - dldparam_approx).cwiseAbs().maxCoeff() == Approx(0.0).margin(10 * eps));
+}
+
+TEST_CASE("Fully-connected layer", "[fully_connected]")
+{
+    const int d = 3;
+    const int n = 5;
+    Matrix x = test_matrix(d, n);
+
+    // Fully-connected layer
+    const int p = 2 * d;
+    FullyConnected layer(d, p);
+
+    check_layer(x, layer);
+}
+
+TEST_CASE("Max-pooling layer", "[max_pooling]")
+{
+    const int d = 5 * 7 * 3;
+    const int n = 5;
+    Matrix x = test_matrix(d, n);
+
+    // Max-pooling layer
+    MaxPooling layer(5, 7, 3, 2, 2);
+
+    check_layer(x, layer);
 }
