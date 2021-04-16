@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 #include <stdexcept>
 #include "../Config.h"
+#include "../Output.h"
 
 namespace MiniDNN
 {
