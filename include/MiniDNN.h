@@ -22,7 +22,7 @@
 
 #include "Output.h"
 #include "Output/RegressionMSE.h"
-#include "Output/BinaryClassEntropy.h"
+#include "Output/BinaryClassCrossEntropy.h"
 #include "Output/MultiClassEntropy.h"
 
 #include "Optimizer.h"

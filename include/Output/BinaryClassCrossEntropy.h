@@ -1,5 +1,5 @@
-#ifndef MNIST_OUTPUT_BINARYCLASSENTROPY_H_
-#define MNIST_OUTPUT_BINARYCLASSENTROPY_H_
+#ifndef MNIST_OUTPUT_BINARYCLASSCROSSENTROPY_H_
+#define MNIST_OUTPUT_BINARYCLASSCROSSENTROPY_H_
 
 #include <Eigen/Core>
 #include <stdexcept>
@@ -15,7 +15,7 @@ namespace MiniDNN
 ///
 /// Binary classification output layer using cross-entropy criterion.
 ///
-class BinaryClassEntropy: public Output
+class BinaryClassCrossEntropy: public Output
 {
 private:
     using Index = Eigen::Index;
@@ -36,7 +36,7 @@ public:
         {
             if ((target_data[i] != Scalar(0)) && (target_data[i] != Scalar(1)))
             {
-                throw std::invalid_argument("[class BinaryClassEntropy]: Target data should only contain zero or one");
+                throw std::invalid_argument("[class BinaryClassCrossEntropy]: Target data should only contain zero or one");
             }
         }
     }
@@ -50,7 +50,7 @@ public:
         {
             if ((target[i] != 0) && (target[i] != 1))
             {
-                throw std::invalid_argument("[class BinaryClassEntropy]: Target data should only contain zero or one");
+                throw std::invalid_argument("[class BinaryClassCrossEntropy]: Target data should only contain zero or one");
             }
         }
     }
@@ -64,7 +64,7 @@ public:
 
         if ((target.cols() != nobs) || (target.rows() != nvar))
         {
-            throw std::invalid_argument("[class BinaryClassEntropy]: Target data have incorrect dimension");
+            throw std::invalid_argument("[class BinaryClassCrossEntropy]: Target data have incorrect dimension");
         }
 
         // Compute the derivative of the input of this layer
@@ -90,7 +90,7 @@ public:
 
         if (nvar != 1)
         {
-            throw std::invalid_argument("[class BinaryClassEntropy]: Only one response variable is allowed when class labels are used as target data");
+            throw std::invalid_argument("[class BinaryClassCrossEntropy]: Only one response variable is allowed when class labels are used as target data");
         }
 
         // Check dimension
@@ -98,7 +98,7 @@ public:
 
         if (target.size() != nobs)
         {
-            throw std::invalid_argument("[class BinaryClassEntropy]: Target data have incorrect dimension");
+            throw std::invalid_argument("[class BinaryClassCrossEntropy]: Target data have incorrect dimension");
         }
 
         // Same as above
@@ -131,7 +131,7 @@ public:
 
     std::string output_type() const override
     {
-        return "BinaryClassEntropy";
+        return "BinaryClassCrossEntropy";
     }
 };
 
@@ -139,4 +139,4 @@ public:
 } // namespace MiniDNN
 
 
-#endif // MNIST_OUTPUT_BINARYCLASSENTROPY_H_
+#endif // MNIST_OUTPUT_BINARYCLASSCROSSENTROPY_H_

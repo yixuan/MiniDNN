@@ -76,7 +76,7 @@ TEST_CASE("Feed-forward network with binary cross entropy", "[fnn_bce]")
     net.add_layer(Sigmoid());
 
     // Set output layer
-    net.set_output(BinaryClassEntropy());
+    net.set_output(BinaryClassCrossEntropy());
 
     // Create optimizer object
     RMSProp opt;
