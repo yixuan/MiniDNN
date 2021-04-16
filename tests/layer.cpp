@@ -1,6 +1,7 @@
 #include <Eigen/Core>
 #include <Initializer/Normal.h>  // To generate random numbers
 #include <Layer/FullyConnected.h>
+#include <Layer/Convolutional.h>
 #include <Layer/MaxPooling.h>
 #include "catch.hpp"
 
@@ -14,7 +15,7 @@ Matrix test_matrix(int d, int n)
     Matrix z(d, n);
 
     // Initialize z with a normal distribution
-    Normal init(0.0, 1.0);
+    Normal init(0.0, 0.01);
     RNG rng(123);
     init.initialize(z, rng);
     return z;
@@ -110,6 +111,25 @@ TEST_CASE("Fully-connected layer", "[fully_connected]")
     // Fully-connected layer
     const int p = 2 * d;
     FullyConnected layer(d, p);
+
+    check_layer(x, layer);
+}
+
+TEST_CASE("Convolutional layer", "[convolutional]")
+{
+    const int in_width = 7;
+    const int in_height = 5;
+    const int in_channels = 3;
+    const int out_channels = 2;
+    const int window_width = 3;
+    const int window_height = 3;
+    const int d = in_width * in_height * in_channels;
+    const int n = 5;
+    Matrix x = test_matrix(d, n);
+
+    // Convolutional layer
+    Convolutional layer(in_width, in_height, in_channels, out_channels,
+                        window_width, window_height);
 
     check_layer(x, layer);
 }
