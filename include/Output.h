@@ -2,6 +2,8 @@
 #define MINIDNN_OUTPUT_H_
 
 #include <Eigen/Core>
+#include <string>
+#include <map>
 #include <stdexcept>
 #include "Config.h"
 
@@ -26,6 +28,7 @@ protected:
     using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
     using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
     using IntegerVector = Eigen::RowVectorXi;
+    using MetaInfo = std::map<std::string, int>;
 
 public:
     ///
@@ -69,6 +72,13 @@ public:
 
     // Return the output layer type. It is used to export the NN model.
     virtual std::string output_type() const = 0;
+
+    // Fill in the meta information of this output layer
+    virtual void fill_meta_info(MetaInfo& map) const
+    {
+        const int outputid = static_cast<int>(internal::output_id(output_type()));
+        map.insert(std::make_pair("OutputLayer", outputid));
+    }
 };
 
 

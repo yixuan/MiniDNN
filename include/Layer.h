@@ -3,6 +3,7 @@
 
 #include <Eigen/Core>
 #include <vector>
+#include <string>
 #include <map>
 #include "Config.h"
 #include "Initializer.h"

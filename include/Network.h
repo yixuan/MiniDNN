@@ -151,7 +151,7 @@ private:
             m_layers[i]->fill_meta_info(map, i);
         }
 
-        map.insert(std::make_pair("OutputLayer", internal::output_id(m_output->output_type())));
+        m_output->fill_meta_info(map);
         return map;
     }
 
@@ -419,11 +419,11 @@ public:
 
         for (int i = 0; i < nlayer; i++)
         {
-            this->add_layer(internal::create_layer(map, i));
+            m_layers.emplace_back(internal::create_layer(map, i));
         }
 
         this->set_parameters(params);
-        this->set_output(internal::create_output(map));
+        m_output.reset(internal::create_output(map));
     }
 };
 
