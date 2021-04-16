@@ -186,7 +186,7 @@ public:
     /// Set the output layer of the neural network.
     ///
     /// \param output An Output object, typically constructed from
-    ///               output layer classes such as RegressionMSE and MultiClassEntropy.
+    ///               output layer classes such as RegressionMSE and MultiClassCrossEntropy.
     ///               If output is an lvalue, it will be copied; if it is an rvalue,
     ///               it will be moved into the network object.
     ///
