@@ -119,8 +119,7 @@ public:
         std::vector<Scalar> res(m_weight.size() + m_bias.size());
         // Copy the data of weights and bias to a long vector
         std::copy(m_weight.data(), m_weight.data() + m_weight.size(), res.begin());
-        std::copy(m_bias.data(), m_bias.data() + m_bias.size(),
-                  res.begin() + m_weight.size());
+        std::copy(m_bias.data(), m_bias.data() + m_bias.size(), res.begin() + m_weight.size());
         return res;
     }
 
@@ -138,7 +137,7 @@ public:
     std::vector<Scalar> get_derivatives() const override
     {
         std::vector<Scalar> res(m_dw.size() + m_db.size());
-        // Copy the data of weights and bias to a long vector
+        // Copy the data of weights and biases to a long vector
         std::copy(m_dw.data(), m_dw.data() + m_dw.size(), res.begin());
         std::copy(m_db.data(), m_db.data() + m_db.size(), res.begin() + m_dw.size());
         return res;

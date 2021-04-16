@@ -1,5 +1,5 @@
-#ifndef UTILS_CONVOLUTION_H_
-#define UTILS_CONVOLUTION_H_
+#ifndef MINIDNN_UTILS_CONVOLUTION_H_
+#define MINIDNN_UTILS_CONVOLUTION_H_
 
 #include <Eigen/Core>
 #include "../Config.h"
@@ -129,8 +129,7 @@ inline void flatten_mat(
 // and progressively move the window to the right
 inline void moving_product(
     const int step,
-    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>&
-    mat1,
+    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>& mat1,
     Eigen::Map< const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> >& mat2,
     Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& res
 )
@@ -142,11 +141,9 @@ inline void moving_product(
     const int col_end = col1 - row2;
     int res_start_col = 0;
 
-    for (int left_end = 0; left_end <= col_end;
-            left_end += step, res_start_col += col2)
+    for (int left_end = 0; left_end <= col_end; left_end += step, res_start_col += col2)
     {
-        res.block(0, res_start_col, row1, col2).noalias() += mat1.block(0, left_end,
-                row1, row2) * mat2;
+        res.block(0, res_start_col, row1, col2).noalias() += mat1.block(0, left_end, row1, row2) * mat2;
     }
 }
 // The main convolution function using the "valid" rule
@@ -156,20 +153,18 @@ inline void convolve_valid(
     const Scalar* filter_data,
     Scalar* dest)
 {
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-    RMatrix;
-    typedef Eigen::Map<const Matrix> ConstMapMat;
+    using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using RMatrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+    using ConstMapMat = Eigen::Map<const Matrix>;
+
     // Flat matrix
     const int flat_rows = dim.conv_rows * n_obs;
     const int flat_cols = dim.filter_rows * dim.channel_cols;
     const int channel_size = dim.channel_rows * dim.channel_cols;
     // Distance between two images
-    const int img_stride = image_outer_loop ? (dim.img_rows * dim.img_cols) :
-                           channel_size;
+    const int img_stride = image_outer_loop ? (dim.img_rows * dim.img_cols) : channel_size;
     // Distance between two channels
-    const int channel_stride = image_outer_loop ? channel_size :
-                               (channel_size * n_obs);
+    const int channel_stride = image_outer_loop ? channel_size : (channel_size * n_obs);
     RMatrix flat_mat(flat_rows, flat_cols);
     // Convolution results
     const int& res_rows = flat_rows;
@@ -179,8 +174,7 @@ inline void convolve_valid(
     const int filter_size = dim.filter_rows * dim.filter_cols;
     const int filter_stride = filter_size * dim.out_channels;
 
-    for (int i = 0; i < dim.in_channels;
-            i++, src += channel_stride, filter_data += filter_stride)
+    for (int i = 0; i < dim.in_channels; i++, src += channel_stride, filter_data += filter_stride)
     {
         // Flatten source image
         flatten_mat(dim, src, img_stride, n_obs, flat_mat);
@@ -241,8 +235,7 @@ inline void convolve_valid(
 // The moving_product() function for the "full" rule
 inline void moving_product(
     const int padding, const int step,
-    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>&
-    mat1,
+    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>& mat1,
     const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& mat2,
     Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& res
 )
@@ -256,20 +249,15 @@ inline void moving_product(
     int left_end = -padding;
     int right_end = step;
 
-    for (; left_end < 0
-            && right_end <= col1;
-            left_end += step, right_end += step, res_start_col += col2)
+    for (; left_end < 0 && right_end <= col1; left_end += step, right_end += step, res_start_col += col2)
     {
-        res.block(0, res_start_col, row1, col2).noalias() += mat1.leftCols(right_end) *
-                mat2.bottomRows(right_end);
+        res.block(0, res_start_col, row1, col2).noalias() += mat1.leftCols(right_end) * mat2.bottomRows(right_end);
     }
 
     // Main part
-    for (; right_end <= col1;
-            left_end += step, right_end += step, res_start_col += col2)
+    for (; right_end <= col1; left_end += step, right_end += step, res_start_col += col2)
     {
-        res.block(0, res_start_col, row1, col2).noalias() += mat1.block(0, left_end,
-                row1, row2) * mat2;
+        res.block(0, res_start_col, row1, col2).noalias() += mat1.block(0, left_end, row1, row2) * mat2;
     }
 
     // Right padding
@@ -277,14 +265,12 @@ inline void moving_product(
     {
         if (left_end <= 0)
         {
-            res.block(0, res_start_col, row1, col2).noalias() += mat1 * mat2.block(0,
-                    -left_end, col1, row2);
+            res.block(0, res_start_col, row1, col2).noalias() += mat1 * mat2.block(0, -left_end, col1, row2);
         }
         else
         {
             const int overlap = col1 - left_end;
-            res.block(0, res_start_col, row1, col2).noalias() += mat1.rightCols(overlap) *
-                    mat2.topRows(overlap);
+            res.block(0, res_start_col, row1, col2).noalias() += mat1.rightCols(overlap) * mat2.topRows(overlap);
         }
     }
 }
@@ -294,10 +280,10 @@ inline void convolve_full(
     const Scalar* src, const int n_obs, const Scalar* filter_data,
     Scalar* dest)
 {
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-    RMatrix;
-    typedef Eigen::Map<const Matrix> ConstMapMat;
+    using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using RMatrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+    using ConstMapMat = Eigen::Map<const Matrix>;
+
     // Padding sizes
     const int padding_top = dim.filter_rows - 1;
     const int padding_left = dim.filter_cols - 1;
@@ -381,4 +367,4 @@ inline void convolve_full(
 } // namespace MiniDNN
 
 
-#endif /* UTILS_CONVOLUTION_H_ */
+#endif // MINIDNN_UTILS_CONVOLUTION_H_

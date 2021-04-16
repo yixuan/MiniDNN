@@ -10,7 +10,7 @@
 
 #include "../Layer.h"
 #include "../Layer/FullyConnected.h"
-// #include "../Layer/Convolutional.h"
+#include "../Layer/Convolutional.h"
 #include "../Layer/MaxPooling.h"
 
 #include "../Activation/ReLU.h"
@@ -54,7 +54,7 @@ inline Layer* create_layer(const std::map<std::string, int>& map, int index)
         const int out_channels = map.find("out_channels" + ind)->second;
         const int window_width = map.find("window_width" + ind)->second;
         const int window_height = map.find("window_height" + ind)->second;
-        // layer = new Convolutional(in_width, in_height, in_channels, out_channels, window_width, window_height);
+        layer = new Convolutional(in_width, in_height, in_channels, out_channels, window_width, window_height);
     }
     else if (layer_type == LayerEnum::MaxPooling)
     {
