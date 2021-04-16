@@ -1,19 +1,17 @@
-#ifndef UTILS_IO_H_
-#define UTILS_IO_H_
+#ifndef MINIDNN_UTILS_IO_H_
+#define MINIDNN_UTILS_IO_H_
 
 #include <map>       // std::map
-#include <string>    // std::string
-#include <sstream>   // std::ostringstream
+#include <string>    // std::string, std::to_string, std::stoi
 #include <fstream>   // std::ofstream, std::ifstream
 #include <iterator>  // std::ostream_iterator, std::istreambuf_iterator, std::back_inserter
 #include <vector>    // std::vector
 #include <stdexcept> // std::runtime_error, std::invalid_argument
-#include <cstdlib>   // atoi
 
 #ifdef _WIN32
-    #include <direct.h>     // _mkdir
+    #include <direct.h>    // _mkdir
 #else
-    #include <sys/stat.h> // mkdir
+    #include <sys/stat.h>  // mkdir
 #endif
 
 #include "../Config.h"
@@ -24,21 +22,6 @@ namespace MiniDNN
 namespace internal
 {
 
-
-///
-/// Convert a number to a string in C++98
-///
-/// \tparam NumberType     Type of the number
-/// \param  num            The number to be converted
-/// \return                An std::string containing the number
-///
-template <class NumberType>
-inline std::string to_string(const NumberType& num)
-{
-    std::ostringstream convert;
-    convert << num;
-    return convert.str();
-}
 
 ///
 /// Create a directory
@@ -67,7 +50,7 @@ inline void write_vector_to_file(
 {
     std::ofstream ofs(filename.c_str(), std::ios::out | std::ios::binary);
     if (ofs.fail())
-        throw std::runtime_error("Error while opening file");
+        throw std::runtime_error("Error while opening file \"" + filename + "\"");
 
     std::ostream_iterator<char> osi(ofs);
     const char* begin_byte = reinterpret_cast<const char*>(&vec[0]);
@@ -84,13 +67,13 @@ inline void write_vector_to_file(
 ///
 inline void write_parameters(
     const std::string& folder, const std::string& filename,
-    const std::vector< std::vector< Scalar> >& params
+    const std::vector<std::vector<Scalar>>& params
 )
 {
     const int nfiles = params.size();
     for (int i = 0; i < nfiles; i++)
     {
-        write_vector_to_file(params[i], folder + "/" + filename + to_string(i));
+        write_vector_to_file(params[i], folder + "/" + filename + std::to_string(i));
     }
 }
 
@@ -105,7 +88,7 @@ inline std::vector<Scalar> read_vector_from_file(const std::string& filename)
 
     std::ifstream ifs(filename.c_str(), std::ios::in | std::ifstream::binary);
     if (ifs.fail())
-        throw std::runtime_error("Error while opening file");
+        throw std::runtime_error("Error while opening file \"" + filename + "\"");
 
     std::vector<char> buffer;
     std::istreambuf_iterator<char> iter(ifs);
@@ -124,16 +107,16 @@ inline std::vector<Scalar> read_vector_from_file(const std::string& filename)
 /// \param nlayer       Number of layers in the NN model
 /// \return             A vector of vectors that contains the NN parameters
 ///
-inline std::vector< std::vector< Scalar> > read_parameters(
+inline std::vector<std::vector<Scalar>> read_parameters(
     const std::string& folder, const std::string& filename, int nlayer
 )
 {
-    std::vector< std::vector< Scalar> > params;
+    std::vector<std::vector<Scalar>> params;
     params.reserve(nlayer);
 
     for (int i = 0; i < nlayer; i++)
     {
-        params.push_back(read_vector_from_file(folder + "/" + filename + to_string(i)));
+        params.push_back(read_vector_from_file(folder + "/" + filename + std::to_string(i)));
     }
 
     return params;
@@ -152,7 +135,7 @@ inline void write_map(const std::string& filename, const std::map<std::string, i
 
     std::ofstream ofs(filename.c_str(), std::ios::out);
     if (ofs.fail())
-        throw std::runtime_error("Error while opening file");
+        throw std::runtime_error("Error while opening file \"" + filename + "\"");
 
     for (std::map<std::string, int>::const_iterator it = map.begin(); it != map.end(); it++)
     {
@@ -170,7 +153,7 @@ inline void read_map(const std::string& filename, std::map<std::string, int>& ma
 {
     std::ifstream ifs(filename.c_str(), std::ios::in);
     if (ifs.fail())
-        throw std::runtime_error("Error while opening file");
+        throw std::runtime_error("Error while opening file \"" + filename + "\"");
 
     map.clear();
     std::string buf;
@@ -182,7 +165,7 @@ inline void read_map(const std::string& filename, std::map<std::string, int>& ma
 
         std::string key = buf.substr(0, sep);
         std::string value = buf.substr(sep + 1, buf.length() - sep - 1);
-        map[key] = atoi(value.c_str());
+        map[key] = std::stoi(value);
     }
 }
 
@@ -192,4 +175,4 @@ inline void read_map(const std::string& filename, std::map<std::string, int>& ma
 } // namespace MiniDNN
 
 
-#endif /* UTILS_IO_H_ */
+#endif // MINIDNN_UTILS_IO_H_
