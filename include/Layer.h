@@ -179,8 +179,9 @@ public:
     ///
     virtual void fill_meta_info(MetaInfo& map, int index) const
     {
-        std::string ind = internal::to_string(index);
-        map.insert(std::make_pair("Layer" + ind, internal::layer_id(layer_type())));
+        std::string ind = std::to_string(index);
+        const int layerid = static_cast<int>(internal::layer_id(layer_type()));
+        map.insert(std::make_pair("Layer" + ind, layerid));
         map.insert(std::make_pair("in_size" + ind, in_size()));
         map.insert(std::make_pair("out_size" + ind, out_size()));
     }

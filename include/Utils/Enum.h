@@ -1,5 +1,5 @@
-#ifndef UTILS_ENUM_H_
-#define UTILS_ENUM_H_
+#ifndef MINIDNN_UTILS_ENUM_H_
+#define MINIDNN_UTILS_ENUM_H_
 
 #include <string>
 #include <stdexcept>
@@ -13,78 +13,64 @@ namespace internal
 
 
 // Enumerations for hidden layers
-enum LAYER_ENUM
+enum class LayerEnum
 {
-    FULLY_CONNECTED = 0,
-    CONVOLUTIONAL,
-    MAX_POOLING
+    FullyConnected = 0,
+    Convolutional,
+    MaxPooling,
+
+    ReLU = 100,
+    Sigmoid,
+    Softmax,
+    Tanh,
+    Mish
 };
 
 // Convert a hidden layer type string to an integer
-inline int layer_id(const std::string& type)
+inline LayerEnum layer_id(const std::string& type)
 {
     if (type == "FullyConnected")
-        return FULLY_CONNECTED;
+        return LayerEnum::FullyConnected;
     if (type == "Convolutional")
-        return CONVOLUTIONAL;
+        return LayerEnum::Convolutional;
     if (type == "MaxPooling")
-        return MAX_POOLING;
+        return LayerEnum::MaxPooling;
+
+    if (type == "ReLU")
+        return LayerEnum::ReLU;
+    if (type == "Sigmoid")
+        return LayerEnum::Sigmoid;
+    if (type == "Softmax")
+        return LayerEnum::Softmax;
+    if (type == "Tanh")
+        return LayerEnum::Tanh;
+    if (type == "Mish")
+        return LayerEnum::Mish;
 
     throw std::invalid_argument("[function layer_id]: Layer is not of a known type");
-    return -1;
-}
-
-// Enumerations for activation functions
-enum ACTIVATION_ENUM
-{
-    IDENTITY = 0,
-    RELU,
-    SIGMOID,
-    SOFTMAX,
-    TANH,
-    MISH
-};
-
-// Convert an activation type string to an integer
-inline int activation_id(const std::string& type)
-{
-    if (type == "Identity")
-        return IDENTITY;
-    if (type == "ReLU")
-        return RELU;
-    if (type == "Sigmoid")
-        return SIGMOID;
-    if (type == "Softmax")
-        return SOFTMAX;
-    if (type == "Tanh")
-        return TANH;
-    if (type == "Mish")
-        return MISH;
-
-    throw std::invalid_argument("[function activation_id]: Activation is not of a known type");
-    return -1;
+    return LayerEnum::FullyConnected;
 }
 
 // Enumerations for output layers
-enum OUTPUT_ENUM
+enum class OutputEnum
 {
-    REGRESSION_MSE = 0,
-    BINARY_CLASS_ENTROPY,
-    MULTI_CLASS_ENTROPY
+    RegressionMSE = 0,
+    BinaryClassCrossEntropy,
+    MultiClassCrossEntropy
 };
 
 // Convert an output layer type string to an integer
-inline int output_id(const std::string& type)
+inline OutputEnum output_id(const std::string& type)
 {
     if (type == "RegressionMSE")
-        return REGRESSION_MSE;
-    if (type == "MultiClassEntropy")
-        return BINARY_CLASS_ENTROPY;
-    if (type == "BinaryClassEntropy")
-        return MULTI_CLASS_ENTROPY;
+        return OutputEnum::RegressionMSE;
+    if (type == "BinaryClassCrossEntropy")
+        return OutputEnum::BinaryClassCrossEntropy;
+    if (type == "MultiClassCrossEntropy")
+        return OutputEnum::MultiClassCrossEntropy;
 
     throw std::invalid_argument("[function output_id]: Output is not of a known type");
-    return -1;
+    return OutputEnum::RegressionMSE;
 }
 
 
@@ -93,4 +79,4 @@ inline int output_id(const std::string& type)
 } // namespace MiniDNN
 
 
-#endif /* UTILS_ENUM_H_ */
+#endif // MINIDNN_UTILS_ENUM_H_
