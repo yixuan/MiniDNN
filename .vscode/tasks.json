@@ -42,6 +42,26 @@
 			],
 			"group": "build",
 			"detail": "compiler: /usr/bin/clang++"
+		},
+		{
+			"type": "cppbuild",
+			"label": "Build program",
+			"command": "/usr/bin/clang++",
+			"args": [
+				"-O",
+				"-I${workspaceFolder}/include",
+				"${file}",
+				"-o",
+				"${fileDirname}/${fileBasenameNoExtension}.out"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "compiler: /usr/bin/clang++"
 		}
 	]
 }
